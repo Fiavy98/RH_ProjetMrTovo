@@ -1,0 +1,144 @@
+CRITICAL - 2026-08-18 06:45:57 --> ErrorException: Trying to access array offset on null
+[Method: GET, Route: CoteOperateur]
+in APPPATH/Views/CoteOperateur.php on line 15.
+ 1 APPPATH/Views/CoteOperateur.php(15): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/View/View.php(240): include('/home/kamado/ProjetVaccance/SystInfo/Operateur/app/Views/CoteOperateur.php')
+ 3 SYSTEMPATH/View/View.php(243): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH/Common.php(1250): CodeIgniter\View\View->render()
+ 5 APPPATH/Controllers/Login.php(80): view()
+ 6 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\Login->Operateur()
+ 7 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 9 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+11 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2026-08-18 06:46:11 --> ErrorException: Trying to access array offset on null
+[Method: GET, Route: CoteOperateur]
+in APPPATH/Views/CoteOperateur.php on line 15.
+ 1 APPPATH/Views/CoteOperateur.php(15): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/View/View.php(240): include('/home/kamado/ProjetVaccance/SystInfo/Operateur/app/Views/CoteOperateur.php')
+ 3 SYSTEMPATH/View/View.php(243): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH/Common.php(1250): CodeIgniter\View\View->render()
+ 5 APPPATH/Controllers/Login.php(80): view()
+ 6 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\Login->Operateur()
+ 7 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 9 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+11 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2026-08-18 06:48:26 --> ErrorException: Undefined array key "typeOperation.libele"
+[Method: GET, Route: CoteOperateur]
+in APPPATH/Views/CoteOperateur.php on line 15.
+ 1 APPPATH/Views/CoteOperateur.php(15): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/View/View.php(240): include('/home/kamado/ProjetVaccance/SystInfo/Operateur/app/Views/CoteOperateur.php')
+ 3 SYSTEMPATH/View/View.php(243): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH/Common.php(1250): CodeIgniter\View\View->render()
+ 5 APPPATH/Controllers/Login.php(79): view()
+ 6 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\Login->Operateur()
+ 7 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 9 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+11 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2026-08-18 07:33:06 --> ArgumentCountError: Too few arguments to function App\Controllers\Login::Operateur(), 0 passed in /home/kamado/ProjetVaccance/SystInfo/Operateur/system/CodeIgniter.php on line 951 and exactly 1 expected
+[Method: GET, Route: CoteOperateur]
+in APPPATH/Controllers/Login.php on line 73.
+ 1 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\Login->Operateur()
+ 2 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2026-08-18 07:33:15 --> ArgumentCountError: Too few arguments to function App\Controllers\Login::Operateur(), 0 passed in /home/kamado/ProjetVaccance/SystInfo/Operateur/system/CodeIgniter.php on line 951 and exactly 1 expected
+[Method: GET, Route: CoteOperateur]
+in APPPATH/Controllers/Login.php on line 73.
+ 1 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\Login->Operateur()
+ 2 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2026-08-18 08:33:54 --> CodeIgniter\HTTP\Exceptions\BadRequestException: The URI you submitted has disallowed characters: "precedent method="
+[Method: GET, Route: tranche/precedent%20method=]
+in SYSTEMPATH/Router/Router.php on line 768.
+ 1 SYSTEMPATH/Router/Router.php(219): CodeIgniter\Router\Router->checkDisallowedChars()
+ 2 SYSTEMPATH/CodeIgniter.php(829): CodeIgniter\Router\Router->handle()
+ 3 SYSTEMPATH/CodeIgniter.php(441): CodeIgniter\CodeIgniter->tryToRouteIt()
+ 4 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 5 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+ 7 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2026-08-18 08:33:58 --> CodeIgniter\HTTP\Exceptions\BadRequestException: The URI you submitted has disallowed characters: "suivant method="
+[Method: GET, Route: tranche/suivant%20method=]
+in SYSTEMPATH/Router/Router.php on line 768.
+ 1 SYSTEMPATH/Router/Router.php(219): CodeIgniter\Router\Router->checkDisallowedChars()
+ 2 SYSTEMPATH/CodeIgniter.php(829): CodeIgniter\Router\Router->handle()
+ 3 SYSTEMPATH/CodeIgniter.php(441): CodeIgniter\CodeIgniter->tryToRouteIt()
+ 4 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 5 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+ 7 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2026-08-18 08:36:18 --> CodeIgniter\HTTP\Exceptions\BadRequestException: The URI you submitted has disallowed characters: "precedent method="
+[Method: GET, Route: tranche/precedent%20method=]
+in SYSTEMPATH/Router/Router.php on line 768.
+ 1 SYSTEMPATH/Router/Router.php(219): CodeIgniter\Router\Router->checkDisallowedChars()
+ 2 SYSTEMPATH/CodeIgniter.php(829): CodeIgniter\Router\Router->handle()
+ 3 SYSTEMPATH/CodeIgniter.php(441): CodeIgniter\CodeIgniter->tryToRouteIt()
+ 4 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 5 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+ 7 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2026-08-18 08:36:21 --> CodeIgniter\HTTP\Exceptions\BadRequestException: The URI you submitted has disallowed characters: "precedent method="
+[Method: GET, Route: tranche/precedent%20method=]
+in SYSTEMPATH/Router/Router.php on line 768.
+ 1 SYSTEMPATH/Router/Router.php(219): CodeIgniter\Router\Router->checkDisallowedChars()
+ 2 SYSTEMPATH/CodeIgniter.php(829): CodeIgniter\Router\Router->handle()
+ 3 SYSTEMPATH/CodeIgniter.php(441): CodeIgniter\CodeIgniter->tryToRouteIt()
+ 4 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 5 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+ 7 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2026-08-18 08:37:17 --> CodeIgniter\HTTP\Exceptions\BadRequestException: The URI you submitted has disallowed characters: "precedent method="
+[Method: GET, Route: tranche/precedent%20method=]
+in SYSTEMPATH/Router/Router.php on line 768.
+ 1 SYSTEMPATH/Router/Router.php(219): CodeIgniter\Router\Router->checkDisallowedChars()
+ 2 SYSTEMPATH/CodeIgniter.php(829): CodeIgniter\Router\Router->handle()
+ 3 SYSTEMPATH/CodeIgniter.php(441): CodeIgniter\CodeIgniter->tryToRouteIt()
+ 4 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 5 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+ 7 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2026-08-18 08:37:41 --> CodeIgniter\HTTP\Exceptions\BadRequestException: The URI you submitted has disallowed characters: "precedent method="
+[Method: GET, Route: tranche/precedent%20method=]
+in SYSTEMPATH/Router/Router.php on line 768.
+ 1 SYSTEMPATH/Router/Router.php(219): CodeIgniter\Router\Router->checkDisallowedChars()
+ 2 SYSTEMPATH/CodeIgniter.php(829): CodeIgniter\Router\Router->handle()
+ 3 SYSTEMPATH/CodeIgniter.php(441): CodeIgniter\CodeIgniter->tryToRouteIt()
+ 4 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 5 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+ 7 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2026-08-18 10:09:51 --> ErrorException: Undefined array key "idOperation"
+[Method: GET, Route: CoteOperateur/1]
+in APPPATH/Views/CoteOperateur.php on line 67.
+ 1 APPPATH/Views/CoteOperateur.php(67): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/View/View.php(240): include('/home/kamado/ProjetVaccance/SystInfo/Operateur/app/Views/CoteOperateur.php')
+ 3 SYSTEMPATH/View/View.php(243): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH/Common.php(1250): CodeIgniter\View\View->render()
+ 5 APPPATH/Controllers/Login.php(93): view()
+ 6 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\Login->Operateur()
+ 7 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 9 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+11 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2026-08-18 10:20:29 --> CodeIgniter\HTTP\Exceptions\BadRequestException: The URI you submitted has disallowed characters: "$idOperation"
+[Method: GET, Route: CoteOperateur/$idOperation]
+in SYSTEMPATH/Router/Router.php on line 768.
+ 1 SYSTEMPATH/Router/Router.php(219): CodeIgniter\Router\Router->checkDisallowedChars()
+ 2 SYSTEMPATH/CodeIgniter.php(829): CodeIgniter\Router\Router->handle()
+ 3 SYSTEMPATH/CodeIgniter.php(441): CodeIgniter\CodeIgniter->tryToRouteIt()
+ 4 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 5 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 6 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+ 7 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
