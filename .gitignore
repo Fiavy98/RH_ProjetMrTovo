@@ -1,0 +1,62 @@
+# ==========================================
+# CodeIgniter 4 Specifics
+# ==========================================
+# Fichier de configuration locale (contient MDP, identifiants BDD, etc.)
+.env
+
+# Dossier d'écritures (logs, sessions, cache, uploads temporaires)
+writable/*
+!writable/index.html
+!writable/cache/index.html
+!writable/debugbar/index.html
+!writable/logs/index.html
+!writable/session/index.html
+!writable/uploads/index.html
+
+# ==========================================
+# Composer & Dependencies
+# ==========================================
+# Dossier des dépendances PHP (installé via composer install)
+/vendor/
+composer.lock
+
+# ==========================================
+# Editor & IDE Configs
+# ==========================================
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# PhpStorm / JetBrains
+.idea/
+
+# Sublime Text / Atom
+*.sublime-project
+*.sublime-workspace
+
+# ==========================================
+# OS Generated Files
+# ==========================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ==========================================
+# Database & Dumps (Securité)
+# ==========================================
+*.sql
+*.sqlite
+*.db
