@@ -8,6 +8,14 @@
 return [
     'title' => 'Bloc 1 · Besoins',
     'items' => [
-        // ['label' => 'Exemples', 'url' => 'bloc1/exemples', 'icon' => '▤', 'roles' => ['rh']],
+        ['label' => 'Vue des besoins', 'url' => 'bloc1/dashboard', 'icon' => '◧'],
+        ['label' => 'Mes demandes', 'url' => 'bloc1/requests', 'icon' => '▤'],
+        ['label' => 'Nouvelle demande', 'url' => 'bloc1/request-form', 'icon' => '＋'],
+        ['label' => 'Examen hiérarchique', 'url' => 'bloc1/hierarchy', 'icon' => '⌁'],
+        ['label' => 'Analyse RH', 'url' => 'bloc1/rh-review', 'icon' => '✧'],
+        ['label' => 'Avis Finance', 'url' => 'bloc1/finance-review', 'icon' => '◈'],
+        ['label' => 'Décisions Direction', 'url' => 'bloc1/direction-review', 'icon' => '◆'],
+        ['label' => 'Postes associés', 'url' => 'bloc1/positions', 'icon' => '▥'],
+        ['label' => 'Historique demandes', 'url' => 'bloc1/request-history', 'icon' => '◷'],
     ],
 ];

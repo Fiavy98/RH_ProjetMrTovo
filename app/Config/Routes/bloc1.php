@@ -1,14 +1,8 @@
 <?php
 
-/**
- * Routes du Bloc 1 (Expression du besoin).
- * Fichier inclus par app/Config/Routes.php : la variable $routes est déjà disponible.
- *
- * Exemple à décommenter et adapter :
- *
- * $routes->group('bloc1', ['namespace' => 'App\Controllers\Bloc1'], static function ($routes) {
- *     $routes->get('exemples', 'ExempleController::index');
- *     $routes->get('exemples/nouveau', 'ExempleController::new');
- *     $routes->post('exemples', 'ExempleController::create');
- * });
- */
+/** Routes du Bloc 1 : expression du besoin. */
+$routes->group('bloc1', ['namespace' => 'App\\Controllers\\Bloc1'], static function ($routes) {
+    $routes->get('/', 'Bloc1Controller::index');
+    $routes->get('(:segment)', 'Bloc1Controller::show/$1');
+    $routes->post('(:segment)', 'Bloc1Controller::save/$1');
+});
