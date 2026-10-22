@@ -13,6 +13,7 @@ class Entretien extends SirhEntity
 {
     public const STATUT_PLANIFIE = 'PLANIFIE';
     public const STATUT_REALISE = 'REALISE';
+    public const STATUT_ANNULE = 'ANNULE';
 
     protected $casts = [
         'id'              => 'integer',

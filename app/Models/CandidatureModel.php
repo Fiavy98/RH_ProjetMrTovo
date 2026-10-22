@@ -28,7 +28,7 @@ class CandidatureModel extends SirhModel
     protected $validationRules = [
         'candidat_id'        => 'required|is_natural_no_zero',
         'offre_emploi_id'    => 'required|is_natural_no_zero',
-        'lettre_motivation'  => 'permit_empty|max_length[255]',
+        'lettre_motivation'  => 'permit_empty',
         'statut'             => 'permit_empty|max_length[30]',
     ];
 }
