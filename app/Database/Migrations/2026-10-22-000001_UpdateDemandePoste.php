@@ -3,36 +3,50 @@
 namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
+use RuntimeException;
 
 class UpdateDemandePoste extends Migration
 {
     public function up()
     {
-        $this->forge->addColumn('demande', [
-            'intitule' => [
+        foreach (['demande', 'poste'] as $table) {
+            if (! $this->db->tableExists($table)) {
+                throw new RuntimeException("La table `{$table}` doit exister avant UpdateDemandePoste.");
+            }
+        }
+
+        if (! $this->db->fieldExists('intitule', 'demande')) {
+            $this->forge->addColumn('demande', ['intitule' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 150,
                 'default'    => '',
-            ],
-            'nombre_postes' => [
+            ]]);
+        }
+
+        if (! $this->db->fieldExists('nombre_postes', 'demande')) {
+            $this->forge->addColumn('demande', ['nombre_postes' => [
                 'type'    => 'INT',
                 'default' => 1,
-            ],
-        ]);
+            ]]);
+        }
 
-        $this->forge->dropColumn('poste', 'nombre_postes');
-        $this->forge->dropKey('poste', 'demande_id');
+        // Les anciens schémas pouvaient imposer un poste unique par demande.
+        // On retire uniquement cette contrainte UNIQUE, jamais l'index normal
+        // ni la clé étrangère nécessaires à poste.demande_id.
+        foreach ($this->db->getIndexData('poste') as $name => $index) {
+            if ($index->type === 'UNIQUE' && $index->fields === ['demande_id']) {
+                $this->forge->dropKey('poste', (string) $name, false);
+            }
+        }
+
+        if ($this->db->fieldExists('nombre_postes', 'poste')) {
+            $this->forge->dropColumn('poste', 'nombre_postes');
+        }
     }
 
     public function down()
     {
-        $this->forge->addColumn('poste', [
-            'nombre_postes' => [
-                'type'    => 'INT',
-                'default' => 1,
-            ],
-        ]);
-        $this->forge->addUniqueKey('demande_id');
-        $this->forge->dropColumn('demande', ['intitule', 'nombre_postes']);
+        // Migration de compatibilité : ne pas supprimer les colonnes désormais
+        // possédées par le schéma initial, ni réintroduire une unicité obsolète.
     }
 }

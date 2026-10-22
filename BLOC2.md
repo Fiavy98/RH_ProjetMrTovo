@@ -11,7 +11,7 @@ La branche `origin/Bloc-1` confirme que `RH_validee` est une décision interméd
 
 La branche Bloc 1 doit être fusionnée et migrée avant les migrations Bloc 2. La migration vérifie ses dépendances et les colonnes partagées avant toute création. Les nouveaux identifiants propres au Bloc 2 sont des `BIGINT`; les clés étrangères vers les tables partagées reprennent dynamiquement le type réel de leur identifiant. Les tables déjà existantes ne sont ni recréées ni modifiées.
 
-Deux corrections restent à faire par le responsable du Bloc 1 : `UpdateDemandePoste.php` doit devenir conditionnelle car le schéma initial contient déjà les colonnes visées, et `AddTypeContratToDemande.php` doit être ordonnée après la création de `type_contrat`. La proposition détaillée se trouve dans `database/bloc2/bloc1_common_migration_proposal.md`.
+Avec l’accord du responsable du Bloc 1, `UpdateDemandePoste.php` et `AddTypeContratToDemande.php` ont été rendues idempotentes. Elles vérifient l’état réel du schéma, conservent les objets déjà conformes, créent le référentiel partagé `type_contrat` uniquement s’il manque et refusent les structures incompatibles. La correction est détaillée dans `database/bloc2/bloc1_common_migration_proposal.md` et testée par `tests/database/CommonMigrationCompatibilityRunner.php`.
 
 ## Entretiens et participants
 
@@ -49,6 +49,7 @@ Point d’entrée : `http://localhost:8080/bloc2/dashboard`.
 
 ```powershell
 php tests/bloc2/RecruitmentWorkflowRunner.php
+php tests/database/CommonMigrationCompatibilityRunner.php
 php spark routes
 php -l app/Services/Bloc2/RecruitmentService.php
 ```
