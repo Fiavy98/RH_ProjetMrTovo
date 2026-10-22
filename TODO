@@ -1,0 +1,44 @@
+- Recuperer le Workflow et l'ecran pour chaque bloc 
+    - on connait :
+        - le role autoriser
+        - le chemin exacte a suivre pour cette bloc 
+        - les menu pour acceder au page 
+        - le contenu du page 
+        - les action dans la page
+
+- Cree le template 
+    - login -> tous les fonctionnalite dans workFlow 
+    - Controlle 
+- Developpement dans ces menu
+
+
+1. Declarer un Besion 
+2. Recrutement 
+3. selection et embauche 
+4. Contrat et onboardig 
+
+- Role : 
+    - Manager : Exprime le besoin , participe au entretiens 
+    - RH : Gerer le demande , publie les offres , gere le candidature , contrats , dossier 
+    - Direction : prendre le decission important (Valider ou refuse les demandes de recrutement)
+    - Candidat : Donnees saisie par un RH 
+    - Salarié/Employe : dossier des Employer 
+    - Administrateur : Acces  a tout 
+
+
+---
+Ecran 1 :
+- liste de canditats retenue au cours d un entretient 
+- table 
+    - candidature where status = retenue
+    - offre_emploi
+- un candidas peuvent postuler au plusieurs poste via la table offre_emploi
+
+Ecran 2 
+- Proposition au canditats retenue 
+- poste propose , salaire, type de contrat , date debut
+
+ecran 3 :
+reponse du client 
+- repose : proposition_embauche.status
+ecran 4 : 
