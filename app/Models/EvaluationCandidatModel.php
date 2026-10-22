@@ -24,6 +24,7 @@ class EvaluationCandidatModel extends SirhModel
         'note',
         'commentaire',
         'decision',
+        'date_evaluation',
     ];
 
     protected $validationRules = [

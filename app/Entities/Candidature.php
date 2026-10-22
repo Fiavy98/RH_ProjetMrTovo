@@ -13,7 +13,9 @@ class Candidature extends SirhEntity
 {
     public const STATUT_EN_ATTENTE = 'EN_ATTENTE';
     public const STATUT_PRESELECTIONNEE = 'PRESELECTIONNEE';
+    public const STATUT_EN_ENTRETIEN = 'EN_ENTRETIEN';
     public const STATUT_RETENUE = 'RETENUE';
+    public const STATUT_REJETEE = 'REJETEE';
 
     protected $casts = [
         'id'                => 'integer',
