@@ -15,7 +15,6 @@ return [
         ['label' => 'Affectations', 'url' => 'bloc4/assignment-b4', 'icon' => '▥'],
         ['label' => 'Documents', 'url' => 'bloc4/documents', 'icon' => '▢'],
         ['label' => 'Onboardings', 'url' => 'bloc4/onboardings', 'icon' => '◴'],
-        ['label' => 'Suivi des 6 tâches', 'url' => 'bloc4/onboarding-detail', 'icon' => '✓'],
         ['label' => 'Paramètres contrats', 'url' => 'bloc4/contract-settings', 'icon' => '⚙'],
     ],
 ];
