@@ -24,7 +24,6 @@ class PosteModel extends SirhModel
         'competences_requises',
         'demande_id',
         'departement_id',
-        'nombre_postes',
         'status_id',
     ];
 
@@ -34,7 +33,6 @@ class PosteModel extends SirhModel
         'competences_requises'  => 'permit_empty',
         'demande_id'            => 'required|is_natural_no_zero',
         'departement_id'        => 'required|is_natural_no_zero',
-        'nombre_postes'         => 'required|is_natural_no_zero',
         'status_id'             => 'required|is_natural_no_zero',
     ];
 }

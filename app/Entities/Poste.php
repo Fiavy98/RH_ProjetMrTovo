@@ -14,7 +14,6 @@ class Poste extends SirhEntity
         'id'              => 'integer',
         'demande_id'      => 'integer',
         'departement_id'  => 'integer',
-        'nombre_postes'   => 'integer',
         'status_id'       => 'integer',
     ];
 }

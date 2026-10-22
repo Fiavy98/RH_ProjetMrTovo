@@ -60,3 +60,5 @@ $RECYCLE.BIN/
 *.sql
 *.sqlite
 *.db
+composer.phar
+app/Database/sql/db_changement.txt

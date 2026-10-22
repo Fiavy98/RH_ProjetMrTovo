@@ -22,19 +22,27 @@ $eyebrow = 'BLOC ' . $bloc . ' · ' . strtoupper($page['title']);
         <div class="stat"><div class="stat-ico">✎</div><div class="num">Session</div><div class="label">Mode prototype</div><div class="hint">Les formulaires ne modifient pas PostgreSQL</div></div>
     </div>
 <?php elseif ($page['kind'] === 'form'): ?>
-    <?= ui_panel('Formulaire de démonstration', '<form method="post" action="' . site_url($base . '/' . $page['slug']) . '">' . csrf_field()
+    <?= ! empty($page['formError']) ? ui_notice($page['formError'], 'danger') : '' ?>
+    <?= ui_panel($page['slug'] === 'demande-form' ? 'Nouvelle demande' : 'Formulaire de démonstration', '<form method="post" action="' . site_url($base . '/' . $page['slug']) . '">' . csrf_field()
         . '<div class="form-grid">' . implode('', array_map(static function (array $field): string {
             $options = [];
             if (isset($field['options'])) {
-                foreach ($field['options'] as $option) $options[$option] = $option;
+                $options = $field['options'];
             }
-            return ui_field($field['name'], $field['label'], $field['type'], '', array_filter([
+            return ui_field($field['name'], $field['label'], $field['type'], $field['value'] ?? '', array_filter([
                 'required' => $field['required'] ?? false,
+                'readonly' => $field['readonly'] ?? false,
                 'full' => $field['type'] === 'textarea',
                 'options' => $options ?: null,
+                'hint' => $field['hint'] ?? null,
+                'min' => $field['min'] ?? null,
+                'max' => $field['max'] ?? null,
+                'step' => $field['step'] ?? null,
             ], static fn ($value) => $value !== null));
         }, $page['fields'])) . '</div><div class="form-actions"><button class="btn btn-primary" type="submit">Enregistrer</button></div></form>',
-        'Exemple de formulaire commun : à spécialiser avec les champs et validations de votre bloc.') ?>
+        $page['slug'] === 'demande-form'
+            ? 'Les budgets sont facultatifs. Le demandeur est déterminé automatiquement.'
+            : 'Exemple de formulaire commun : à spécialiser avec les champs et validations de votre bloc.') ?>
     <?php if ($page['saved'] !== []): ?>
         <?= ui_notice('Dernière saisie conservée dans la session de démonstration.', 'success') ?>
         <?= ui_panel('Saisies récentes', ui_table(['Objet', 'Description', 'Statut'], array_map(static fn ($item) => [

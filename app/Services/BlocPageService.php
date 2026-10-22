@@ -41,7 +41,7 @@ abstract class BlocPageService
         $text = static fn (string $name, string $label, bool $required = false, string $type = 'text') => ['name' => $name, 'label' => $label, 'type' => $type, 'required' => $required];
         $select = static fn (string $name, string $label, array $options) => ['name' => $name, 'label' => $label, 'type' => 'select', 'required' => true, 'options' => $options];
         return match ($slug) {
-            'request-form' => [$text('subject', 'Intitulé du poste', true), $text('department', 'Département', true), $text('motif', 'Motif du besoin', true, 'textarea'), $text('budget', 'Budget prévisionnel (Ar)', false, 'number')],
+            'demande-form' => [$text('subject', 'Intitulé du poste', true), $text('department', 'Département', true), $text('motif', 'Motif du besoin', true, 'textarea'), $text('budget', 'Budget prévisionnel (Ar)', false, 'number')],
             'offer-form' => [$text('subject', 'Titre de l’offre', true), $text('description', 'Description', true, 'textarea'), $text('published', 'Date de publication', false, 'date'), $text('closing', 'Date de clôture', false, 'date')],
             'candidate-form' => [$text('last_name', 'Nom', true), $text('first_name', 'Prénom', true), $text('email', 'Adresse e-mail', true, 'email'), $text('phone', 'Téléphone')],
             'application-form' => [$text('candidate', 'Candidat', true), $text('offer', 'Offre d’emploi', true), $text('cover_letter', 'Lettre de motivation', false, 'textarea')],

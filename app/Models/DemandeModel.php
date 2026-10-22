@@ -19,18 +19,24 @@ class DemandeModel extends SirhModel
     protected $returnType = Demande::class;
 
     protected $allowedFields = [
+        'intitule',
+        'nombre_postes',
         'motif',
         'budget_min',
         'budget_max',
+        'type_contrat_id',
         'status_id',
         'demandeur_id',
-        'departement_id',
+        'departement_id'
     ];
 
     protected $validationRules = [
+        'intitule'        => 'required|max_length[150]',
+        'nombre_postes'   => 'required|is_natural_no_zero',
         'motif'           => 'required',
         'budget_min'      => 'permit_empty|numeric|greater_than_equal_to[0]',
         'budget_max'      => 'permit_empty|numeric|greater_than_equal_to[0]',
+        'type_contrat_id' => 'required|is_natural_no_zero',
         'status_id'       => 'required|is_natural_no_zero',
         'demandeur_id'    => 'required|is_natural_no_zero',
         'departement_id'  => 'required|is_natural_no_zero',
