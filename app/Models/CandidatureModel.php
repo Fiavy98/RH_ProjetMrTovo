@@ -31,4 +31,34 @@ class CandidatureModel extends SirhModel
         'lettre_motivation'  => 'permit_empty',
         'statut'             => 'permit_empty|max_length[30]',
     ];
+
+       public function findRetenues(): array
+    {
+        return $this->where(
+            'statut',
+            Candidature::STATUT_RETENUE
+        )->findAll();
+    }
+
+    public function findRetenuesAvecDetails(): array
+{
+    return $this->db->table('candidature c')
+        ->select([
+            'c.id',
+            'ca.nom AS nom_candidat',
+            'ca.prenom AS prenom_candidat',
+            'o.titre AS titre_offre',
+            'c.lettre_motivation',
+            'c.statut',
+            'c.date_candidature',
+        ])
+        ->join('candidat ca', 'ca.id = c.candidat_id')
+        ->join('offre_emploi o', 'o.id = c.offre_emploi_id')
+        ->join('proposition_embauche p', 'p.candidature_id = c.id', 'left')
+        ->where('c.statut', \App\Entities\Candidature::STATUT_RETENUE)
+        ->where('p.id', null)
+        ->get()
+        ->getResultArray();
+}
+
 }

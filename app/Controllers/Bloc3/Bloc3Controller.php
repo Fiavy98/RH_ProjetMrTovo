@@ -9,5 +9,10 @@ use App\Services\Bloc3\Bloc3PageService;
 class Bloc3Controller extends BlocPageController
 {
     protected int $bloc = 3;
-    protected function pages(): BlocPageService { return new Bloc3PageService(); }
+
+    protected function pages(): BlocPageService { 
+        return new Bloc3PageService(); 
+    }
 }
+
+
