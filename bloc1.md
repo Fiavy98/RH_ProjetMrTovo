@@ -55,6 +55,10 @@ La colonne `nombre_postes` a été supprimée de la table `poste`.
 ## Fichiers concernés
 
 - `app/Controllers/Bloc1/Bloc1Controller.php`
+- `app/Controllers/Bloc1/RhController.php`
+- `app/Controllers/Bloc1/FinanceController.php`
+- `app/Controllers/Bloc1/DirectionController.php`
+- `app/Controllers/Bloc1/HistoryController.php`
 - `app/Services/Bloc1/DemandeFormService.php`
 - `app/Views/bloc1/demande_form.php`
 - `app/Models/DemandeModel.php`

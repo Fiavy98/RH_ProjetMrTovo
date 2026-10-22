@@ -62,3 +62,4 @@ $RECYCLE.BIN/
 *.db
 composer.phar
 app/Database/sql/db_changement.txt
+app/Database/sql/db_teste.txt
