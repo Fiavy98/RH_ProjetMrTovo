@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Services\Bloc2\RecruitmentService;
 use App\Database\Migrations\CreateBloc2RecruitmentTables;
 use App\Database\Migrations\CreateEntretienParticipantTable;
+use App\Database\Migrations\LinkOffersToPositions;
 use CodeIgniter\Boot;
 use Config\Database;
 use Config\Paths;
@@ -33,6 +34,7 @@ require SYSTEMPATH . 'Boot.php';
 Boot::bootTest($paths);
 require_once APPPATH . 'Database/Migrations/2026-10-22-100000_CreateBloc2RecruitmentTables.php';
 require_once APPPATH . 'Database/Migrations/2026-10-22-110000_CreateEntretienParticipantTable.php';
+require_once APPPATH . 'Database/Migrations/2026-10-23-090000_LinkOffersToPositions.php';
 
 $db = Database::connect([
     'DBDriver' => 'SQLite3', 'database' => ':memory:', 'DBPrefix' => '', 'DBDebug' => true,
@@ -43,8 +45,9 @@ $schema = [
     'CREATE TABLE status (id INTEGER PRIMARY KEY, code TEXT UNIQUE NOT NULL, libelle TEXT, actif INTEGER DEFAULT 1)',
     'CREATE TABLE employe (id INTEGER PRIMARY KEY, matricule TEXT, nom TEXT, prenom TEXT, actif INTEGER DEFAULT 1)',
     'CREATE TABLE demande (id INTEGER PRIMARY KEY, intitule TEXT, status_id INTEGER)',
+    'CREATE TABLE poste (id INTEGER PRIMARY KEY, intitule TEXT, demande_id INTEGER, departement_id INTEGER, status_id INTEGER)',
     'CREATE TABLE validation (id INTEGER PRIMARY KEY, demande_id INTEGER, validateur_id INTEGER, status_id INTEGER, commentaire TEXT, date_validation TEXT)',
-    "CREATE TABLE offre_emploi (id INTEGER PRIMARY KEY AUTOINCREMENT, demande_recrutement_id INTEGER, titre TEXT, description TEXT, date_publication TEXT, date_cloture TEXT, statut TEXT DEFAULT 'BROUILLON')",
+    "CREATE TABLE offre_emploi (id INTEGER PRIMARY KEY AUTOINCREMENT, demande_recrutement_id INTEGER, poste_id INTEGER, titre TEXT, description TEXT, date_publication TEXT, date_cloture TEXT, statut TEXT DEFAULT 'BROUILLON')",
     'CREATE TABLE candidat (id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT, prenom TEXT, email TEXT UNIQUE, telephone TEXT, cv TEXT, date_creation TEXT DEFAULT CURRENT_TIMESTAMP)',
     "CREATE TABLE candidature (id INTEGER PRIMARY KEY AUTOINCREMENT, candidat_id INTEGER, offre_emploi_id INTEGER, date_candidature TEXT DEFAULT CURRENT_TIMESTAMP, lettre_motivation TEXT, statut TEXT DEFAULT 'EN_ATTENTE', UNIQUE(candidat_id, offre_emploi_id))",
     "CREATE TABLE entretien (id INTEGER PRIMARY KEY AUTOINCREMENT, candidature_id INTEGER, date_entretien TEXT, type_entretien TEXT, lieu TEXT, statut TEXT DEFAULT 'PLANIFIE', compte_rendu TEXT)",
@@ -74,6 +77,12 @@ $db->table('validation')->insertBatch([
     ['id' => 2, 'demande_id' => 2, 'validateur_id' => 1, 'status_id' => 2, 'commentaire' => 'Avis RH', 'date_validation' => '2026-10-19 10:00:00'],
 ]);
 
+$db->table('poste')->insertBatch([
+    ['id' => 1, 'intitule' => 'Analyste A', 'demande_id' => 1, 'departement_id' => 1, 'status_id' => 1],
+    ['id' => 2, 'intitule' => 'Analyste B', 'demande_id' => 1, 'departement_id' => 1, 'status_id' => 1],
+    ['id' => 3, 'intitule' => 'Poste RH', 'demande_id' => 2, 'departement_id' => 1, 'status_id' => 1],
+]);
+
 $service = new RecruitmentService($db);
 $tests = 0;
 $assert = static function (bool $condition, string $message) use (&$tests): void {
@@ -81,13 +90,16 @@ $assert = static function (bool $condition, string $message) use (&$tests): void
     if (! $condition) { throw new RuntimeException("ÉCHEC #{$tests}: {$message}"); }
 };
 
+$assert($service->saveOffer(['demande_recrutement_id' => 1, 'titre' => 'Sans poste'])['ok'] === false, 'une offre doit cibler un poste');
+$assert($service->saveOffer(['demande_recrutement_id' => 1, 'poste_id' => 3, 'titre' => 'Mauvaise demande'])['ok'] === false, 'le poste doit appartenir à la demande');
 $approved = $service->approvedRequests();
 $assert(array_column($approved, 'id') === [1], 'seule la demande validée et tracée par la Direction est approuvée');
-$assert($service->saveOffer(['demande_recrutement_id' => 2, 'titre' => 'Interdite'])['ok'] === false, 'RH_validee ne permet pas de créer une offre');
-$assert($service->saveOffer(['demande_recrutement_id' => 3, 'titre' => 'Sans validation'])['ok'] === false, 'le statut Direction sans validation ne suffit pas');
-$assert($service->saveOffer(['demande_recrutement_id' => 1, 'titre' => 'Analyste', 'date_cloture' => '2026-12-31'])['ok'], 'création du brouillon approuvé');
+$assert($service->saveOffer(['demande_recrutement_id' => 2, 'poste_id' => 3, 'titre' => 'Interdite'])['ok'] === false, 'RH_validee ne permet pas de créer une offre');
+$assert($service->saveOffer(['demande_recrutement_id' => 3, 'poste_id' => 1, 'titre' => 'Sans validation'])['ok'] === false, 'le statut Direction sans validation ne suffit pas');
+$assert($service->saveOffer(['demande_recrutement_id' => 1, 'poste_id' => 1, 'titre' => 'Analyste', 'date_cloture' => '2026-12-31'])['ok'], 'création du brouillon approuvé');
 $assert($service->publishOffer(1)['ok'], 'publication de l’offre approuvée');
-$db->table('offre_emploi')->insert(['id' => 99, 'demande_recrutement_id' => 2, 'titre' => 'Brouillon RH', 'statut' => 'BROUILLON']);
+$assert($service->saveOffer(['demande_recrutement_id' => 1, 'poste_id' => 1, 'titre' => 'Doublon actif'])['ok'] === false, 'deux offres actives ne ciblent pas le même poste');
+$db->table('offre_emploi')->insert(['id' => 99, 'demande_recrutement_id' => 2, 'poste_id' => 3, 'titre' => 'Brouillon RH', 'statut' => 'BROUILLON']);
 $assert($service->publishOffer(99)['ok'] === false, 'publication refusée lorsque seule la validation RH existe');
 
 $assert($service->saveCandidate(['nom' => 'Andry', 'prenom' => 'Jean', 'email' => 'jean@example.test'])['ok'], 'création candidat 1');
@@ -96,6 +108,7 @@ $assert($service->saveApplication(['candidat_id' => 1, 'offre_emploi_id' => 1])[
 $assert($service->saveApplication(['candidat_id' => 1, 'offre_emploi_id' => 1])['ok'] === false, 'doublon candidat/offre rejeté');
 $assert($service->changeApplicationStatus(1, ['statut' => 'PRESELECTIONNEE'])['ok'], 'présélection');
 
+$assert($service->saveApplication(['candidat_id' => 2, 'offre_emploi_id' => 1])['ok'], 'une seconde personne peut candidater au même poste');
 $first = ['candidature_id' => 1, 'date_entretien' => '2026-11-01T09:00', 'type_entretien' => 'RH', 'lieu' => 'Salle A', 'participant_ids' => [1, 2]];
 $assert($service->saveInterview($first)['ok'], 'premier entretien planifié');
 $assert($service->changeInterviewStatus(1, ['statut' => 'REALISE', 'compte_rendu' => 'Entretien RH concluant'])['ok'], 'premier entretien réalisé');
@@ -119,6 +132,12 @@ $assert($db->table('candidature')->where('id', 1)->get()->getRowArray()['statut'
 $assert($db->table('historique_recrutement')->where('action', 'ENTRETIEN_ANNULE')->countAllResults() === 2, 'les annulations sont présentes dans l’historique');
 $assert($db->table('historique_recrutement')->where('action', 'ENTRETIEN_PLANIFIE')->countAllResults() === 4, 'les quatre planifications sont historisées');
 
+$assert($db->table('offre_emploi')->where('id', 1)->get()->getRowArray()['statut'] === 'CLOTUREE', 'l’offre est clôturée après la sélection');
+$db->table('candidature')->where('id', 2)->update(['statut' => 'EN_ENTRETIEN']);
+$db->table('entretien')->insert(['id' => 20, 'candidature_id' => 2, 'date_entretien' => '2026-11-08 09:00:00', 'type_entretien' => 'RH', 'lieu' => 'Salle A', 'statut' => 'REALISE']);
+$db->table('evaluation_candidat')->insert(['entretien_id' => 20, 'evaluateur_id' => 1, 'note' => 16, 'commentaire' => 'Bon dossier', 'decision' => 'FAVORABLE']);
+$assert($service->finalDecision(2, ['decision' => 'RETENUE'])['ok'] === false, 'un second candidat ne peut pas être retenu pour le même poste');
+
 $migrationDb = Database::connect([
     'DBDriver' => 'SQLite3', 'database' => ':memory:', 'DBPrefix' => '', 'DBDebug' => true,
     'foreignKeys' => true, 'dateFormat' => ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'],
@@ -127,15 +146,22 @@ foreach ([
     'CREATE TABLE status (id INTEGER PRIMARY KEY, code TEXT)',
     'CREATE TABLE employe (id INTEGER PRIMARY KEY, matricule TEXT, nom TEXT, prenom TEXT, actif INTEGER)',
     'CREATE TABLE demande (id INTEGER PRIMARY KEY, intitule TEXT, status_id INTEGER)',
+    'CREATE TABLE poste (id INTEGER PRIMARY KEY, intitule TEXT, demande_id INTEGER)',
     'CREATE TABLE validation (id INTEGER PRIMARY KEY, demande_id INTEGER, status_id INTEGER)',
     'CREATE TABLE candidat (id INTEGER PRIMARY KEY, nom TEXT, prenom TEXT, email TEXT, telephone TEXT, cv TEXT, date_creation TEXT)',
 ] as $sql) { $migrationDb->query($sql); }
 (new CreateBloc2RecruitmentTables(Database::forge($migrationDb)))->up();
 (new CreateEntretienParticipantTable(Database::forge($migrationDb)))->up();
+$migrationDb->table('demande')->insert(['id' => 1, 'intitule' => 'Demande historique', 'status_id' => 1]);
+$migrationDb->table('poste')->insert(['id' => 1, 'intitule' => 'Poste historique', 'demande_id' => 1]);
+$migrationDb->table('offre_emploi')->insert(['id' => 1, 'demande_recrutement_id' => 1, 'titre' => 'Offre historique', 'statut' => 'CLOTUREE']);
+(new LinkOffersToPositions(Database::forge($migrationDb)))->up();
 foreach (['offre_emploi', 'candidature', 'entretien', 'evaluation_candidat', 'historique_recrutement', 'entretien_participant'] as $table) {
     $assert($migrationDb->tableExists($table), "migration additive de {$table}");
 }
 $offerFields = array_column($migrationDb->getFieldData('offre_emploi'), 'type', 'name');
+$assert((int) $migrationDb->table('offre_emploi')->where('id', 1)->get()->getRowArray()['poste_id'] === 1, 'une ancienne offre est rattachée automatiquement lorsque le poste est non ambigu');
+$assert(isset($offerFields['poste_id']), 'la migration relie chaque offre à un poste précis');
 $assert(str_contains(strtolower($offerFields['id']), 'int'), 'SQLite adapte l’identité BIGINT en identité entière compatible');
 
 $missingDependencyDb = Database::connect([

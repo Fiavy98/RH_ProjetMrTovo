@@ -20,6 +20,7 @@ class OffreEmploiModel extends SirhModel
 
     protected $allowedFields = [
         'demande_recrutement_id',
+        'poste_id',
         'titre',
         'description',
         'date_publication',
@@ -29,6 +30,7 @@ class OffreEmploiModel extends SirhModel
 
     protected $validationRules = [
         'demande_recrutement_id'  => 'permit_empty|is_natural_no_zero',
+        'poste_id'                => 'required|is_natural_no_zero',
         'titre'                   => 'required|max_length[150]',
         'description'             => 'permit_empty',
         'date_publication'        => 'permit_empty|valid_date[Y-m-d]',

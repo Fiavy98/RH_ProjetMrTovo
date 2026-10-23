@@ -18,6 +18,7 @@ class OffreEmploi extends SirhEntity
     protected $casts = [
         'id'                      => 'integer',
         'demande_recrutement_id'  => '?integer',
+        'poste_id'                => '?integer',
         'date_publication'        => '?datetime',
         'date_cloture'            => '?datetime',
     ];

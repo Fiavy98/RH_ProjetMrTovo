@@ -29,11 +29,12 @@ class RecruitmentService
 
     public function offers(array $filters = []): array
     {
-        $b = $this->db->table('offre_emploi o')->select('o.*, d.intitule AS demande_intitule, COUNT(c.id) AS candidature_count')
-            ->join('demande d', 'd.id = o.demande_recrutement_id', 'left')->join('candidature c', 'c.offre_emploi_id = o.id', 'left')
-            ->groupBy('o.id, d.intitule')->orderBy('o.id', 'DESC');
+        $b = $this->db->table('offre_emploi o')->select('o.*, d.intitule AS demande_intitule, p.intitule AS poste_intitule, COUNT(c.id) AS candidature_count')
+            ->join('demande d', 'd.id = o.demande_recrutement_id', 'left')->join('poste p', 'p.id = o.poste_id', 'left')
+            ->join('candidature c', 'c.offre_emploi_id = o.id', 'left')
+            ->groupBy('o.id, d.intitule, p.intitule')->orderBy('o.id', 'DESC');
         if (! empty($filters['statut'])) { $b->where('o.statut', $filters['statut']); }
-        if ($q = trim((string) ($filters['q'] ?? ''))) { $b->groupStart()->like('LOWER(o.titre)', mb_strtolower($q))->orLike('LOWER(d.intitule)', mb_strtolower($q))->groupEnd(); }
+        if ($q = trim((string) ($filters['q'] ?? ''))) { $b->groupStart()->like('LOWER(o.titre)', mb_strtolower($q))->orLike('LOWER(d.intitule)', mb_strtolower($q))->orLike('LOWER(p.intitule)', mb_strtolower($q))->groupEnd(); }
         return $b->get()->getResultArray();
     }
 
@@ -49,18 +50,37 @@ class RecruitmentService
         return array_values(array_filter($rows, fn (array $r): bool => $this->isRequestApproved((int) $r['id'])));
     }
 
+    /** Postes issus d'une demande approuvée et non pris par une autre offre active. */
+    public function availablePositions(?int $includeOfferId = null): array
+    {
+        $includedPositionId = $includeOfferId ? (int) ($this->offer($includeOfferId)['poste_id'] ?? 0) : 0;
+        $rows = $this->db->table('poste p')
+            ->select('p.id, p.intitule, p.demande_id, d.intitule AS demande_intitule')
+            ->join('demande d', 'd.id = p.demande_id')
+            ->orderBy('d.id', 'DESC')->orderBy('p.intitule')->get()->getResultArray();
+
+        return array_values(array_filter($rows, function (array $position) use ($includeOfferId, $includedPositionId): bool {
+            return $this->isRequestApproved((int) $position['demande_id'])
+                && ((int) $position['id'] === $includedPositionId || $this->positionAvailable((int) $position['id'], $includeOfferId));
+        }));
+    }
+
     public function saveOffer(array $input): array
     {
         $id = (int) ($input['id'] ?? 0); $requestId = (int) ($input['demande_recrutement_id'] ?? 0);
+        $positionId = (int) ($input['poste_id'] ?? 0);
         $title = trim((string) ($input['titre'] ?? '')); $description = trim((string) ($input['description'] ?? ''));
         $closing = trim((string) ($input['date_cloture'] ?? '')) ?: null;
+        $position = $this->row('poste', $positionId);
+        if (! $position || (int) $position['demande_id'] !== $requestId) { return $this->fail('Sélectionnez un poste précis appartenant à cette demande.'); }
+        if (! $this->positionAvailable($positionId, $id ?: null)) { return $this->fail('Ce poste est déjà occupé ou associé à une autre offre active.'); }
         if (! $this->isRequestApproved($requestId)) { return $this->fail('La demande doit être approuvée par la Direction et posséder sa validation Direction.'); }
         if ($title === '' || mb_strlen($title) > 150) { return $this->fail('Le titre est obligatoire et limité à 150 caractères.'); }
         if ($closing && ! $this->validDate($closing)) { return $this->fail('La date de clôture est invalide.'); }
         $model = new OffreEmploiModel($this->db); $old = $id ? $this->offer($id) : null;
         if ($id && ($old === null || $old['statut'] !== 'BROUILLON')) { return $this->fail('Seule une offre en brouillon peut être modifiée.'); }
-        return $this->transaction(function () use ($model, $id, $old, $requestId, $title, $description, $closing) {
-            $data = ['demande_recrutement_id' => $requestId, 'titre' => $title, 'description' => $description ?: null,
+        return $this->transaction(function () use ($model, $id, $old, $requestId, $positionId, $title, $description, $closing) {
+            $data = ['demande_recrutement_id' => $requestId, 'poste_id' => $positionId, 'titre' => $title, 'description' => $description ?: null,
                 'date_publication' => null, 'date_cloture' => $closing, 'statut' => 'BROUILLON'];
             $saved = $id ? $model->update($id, $data) : ($id = (int) $model->insert($data));
             if ($saved === false || ! $id) { throw new \RuntimeException(implode(' ', $model->errors()) ?: 'Enregistrement impossible.'); }
@@ -75,6 +95,7 @@ class RecruitmentService
         if (! $offer || $offer['statut'] !== 'BROUILLON') { return $this->fail('Seule une offre en brouillon peut être publiée.'); }
         if (! $this->isRequestApproved((int) $offer['demande_recrutement_id'])) { return $this->fail('La demande n’est pas approuvée par la Direction.'); }
         if ($offer['date_cloture'] && $offer['date_cloture'] < date('Y-m-d')) { return $this->fail('La date de clôture est déjà dépassée.'); }
+        if (! $this->positionMatchesOffer($offer) || ! $this->positionAvailable((int) $offer['poste_id'], $id)) { return $this->fail('Le poste de cette offre est invalide, occupé ou déjà recruté.'); }
         return $this->statusTransaction(new OffreEmploiModel($this->db), 'OFFRE', $offer, 'PUBLIEE', 'OFFRE_PUBLIEE', ['date_publication' => date('Y-m-d')]);
     }
 
@@ -128,6 +149,7 @@ class RecruitmentService
         if (! $candidate || ! $offer) { return $this->fail('Le candidat ou l’offre est introuvable.'); }
         if ($offer['statut'] !== 'PUBLIEE' || ($offer['date_cloture'] && $offer['date_cloture'] < date('Y-m-d'))) { return $this->fail('Cette offre n’accepte plus de candidatures.'); }
         if ($this->db->table('candidature')->where(['candidat_id' => $candidateId, 'offre_emploi_id' => $offerId])->countAllResults()) { return $this->fail('Ce candidat a déjà postulé à cette offre.'); }
+        if (! $this->positionMatchesOffer($offer) || ! $this->positionAvailable((int) $offer['poste_id'], $offerId)) { return $this->fail('Le poste associé à cette offre n’est plus disponible.'); }
         $model = new CandidatureModel($this->db);
         return $this->transaction(function () use ($model, $candidateId, $offerId, $input) {
             $data = ['candidat_id' => $candidateId, 'offre_emploi_id' => $offerId,
@@ -259,6 +281,33 @@ class RecruitmentService
         $evaluationCount = $this->db->table('evaluation_candidat ev')->join('entretien e', 'e.id = ev.entretien_id')->where('e.candidature_id', $id)->countAllResults();
         if (! $evaluationCount) { return $this->fail('Au moins une évaluation est requise avant la décision finale.'); }
         if ($next === 'REJETEE' && $reason === '') { return $this->fail('Le motif du rejet est obligatoire.'); }
+        $offer = $this->offer((int) $app['offre_emploi_id']);
+        if ($next === 'RETENUE' && (! $offer || ! $this->positionMatchesOffer($offer) || ! $this->positionAvailableForSelection((int) $offer['poste_id'], $id))) {
+            return $this->fail('Ce poste possède déjà un candidat retenu ou un titulaire actif.');
+        }
+        if ($next === 'RETENUE') {
+            return $this->transaction(function () use ($app, $offer, $id, $reason) {
+                $positionId = (int) $offer['poste_id'];
+                if ($this->db->DBDriver === 'Postgre') {
+                    $this->db->query('SELECT pg_advisory_xact_lock(?)', [$positionId]);
+                }
+                if (! $this->positionAvailableForSelection($positionId, $id)) {
+                    throw new \RuntimeException('Ce poste possède déjà un candidat retenu ou un titulaire actif.');
+                }
+                if (! (new CandidatureModel($this->db))->update($id, ['statut' => 'RETENUE'])) {
+                    throw new \RuntimeException('La candidature n’a pas pu être retenue.');
+                }
+                $this->log('CANDIDATURE', $id, 'DECISION_FINALE', ['statut' => $app['statut']], ['statut' => 'RETENUE'] + ($reason ? ['motif' => $reason] : []));
+                if ($offer['statut'] === 'PUBLIEE') {
+                    $offerUpdate = ['statut' => 'CLOTUREE', 'date_cloture' => $offer['date_cloture'] ?: date('Y-m-d')];
+                    if (! $this->db->table('offre_emploi')->where('id', $offer['id'])->update($offerUpdate)) {
+                        throw new \RuntimeException('L’offre n’a pas pu être clôturée.');
+                    }
+                    $this->log('OFFRE', (int) $offer['id'], 'OFFRE_CLOTUREE_APRES_SELECTION', ['statut' => 'PUBLIEE'], $offerUpdate);
+                }
+                return ['ok' => true, 'message' => 'Candidature retenue et poste réservé.'];
+            });
+        }
         return $this->statusTransaction(new CandidatureModel($this->db), 'CANDIDATURE', $app, $next, 'DECISION_FINALE', [], $reason);
     }
 
@@ -273,8 +322,8 @@ class RecruitmentService
         return $b->get()->getResultArray();
     }
 
-    private function applicationQuery() { return $this->db->table('candidature ca')->select('ca.*, c.nom, c.prenom, c.email, o.titre AS offre_titre')->join('candidat c', 'c.id = ca.candidat_id')->join('offre_emploi o', 'o.id = ca.offre_emploi_id'); }
-    private function interviewQuery() { return $this->db->table('entretien e')->select('e.*, ca.statut AS candidature_statut, c.nom, c.prenom, o.titre AS offre_titre')->join('candidature ca', 'ca.id = e.candidature_id')->join('candidat c', 'c.id = ca.candidat_id')->join('offre_emploi o', 'o.id = ca.offre_emploi_id'); }
+    private function applicationQuery() { return $this->db->table('candidature ca')->select('ca.*, c.nom, c.prenom, c.email, o.titre AS offre_titre, o.poste_id, p.intitule AS poste_intitule')->join('candidat c', 'c.id = ca.candidat_id')->join('offre_emploi o', 'o.id = ca.offre_emploi_id')->join('poste p', 'p.id = o.poste_id', 'left'); }
+    private function interviewQuery() { return $this->db->table('entretien e')->select('e.*, ca.statut AS candidature_statut, c.nom, c.prenom, o.titre AS offre_titre, o.poste_id, p.intitule AS poste_intitule')->join('candidature ca', 'ca.id = e.candidature_id')->join('candidat c', 'c.id = ca.candidat_id')->join('offre_emploi o', 'o.id = ca.offre_emploi_id')->join('poste p', 'p.id = o.poste_id', 'left'); }
     private function row(string $table, int $id): ?array { return $id > 0 ? $this->db->table($table)->where('id', $id)->get()->getFirstRow('array') : null; }
     private function count(string $table, array $where = []): int { return $this->db->table($table)->where($where)->countAllResults(); }
     private function validDate(string $date): bool { $d = \DateTimeImmutable::createFromFormat('!Y-m-d', $date); return $d && $d->format('Y-m-d') === $date; }
@@ -285,6 +334,36 @@ class RecruitmentService
         $current = $this->db->table('demande d')->join('status s', 's.id = d.status_id')->where('d.id', $id)->where('s.code', 'DIRECTION_validee')->countAllResults();
         $validation = $this->db->table('validation v')->join('status s', 's.id = v.status_id')->where('v.demande_id', $id)->where('s.code', 'DIRECTION_validee')->countAllResults();
         return $current > 0 && $validation > 0;
+    }
+
+    private function positionMatchesOffer(array $offer): bool
+    {
+        $position = $this->row('poste', (int) ($offer['poste_id'] ?? 0));
+        return $position !== null && (int) $position['demande_id'] === (int) $offer['demande_recrutement_id'];
+    }
+
+    private function positionAvailable(int $positionId, ?int $includeOfferId = null): bool
+    {
+        if ($positionId < 1 || $this->row('poste', $positionId) === null) { return false; }
+        if ($this->db->tableExists('affectation')
+            && $this->db->table('affectation')->where('poste_id', $positionId)->where('date_fin IS NULL', null, false)->countAllResults() > 0) {
+            return false;
+        }
+        $offers = $this->db->table('offre_emploi')->where('poste_id', $positionId)->whereIn('statut', ['BROUILLON', 'PUBLIEE']);
+        if ($includeOfferId) { $offers->where('id !=', $includeOfferId); }
+        if ($offers->countAllResults() > 0) { return false; }
+        return $this->db->table('candidature ca')->join('offre_emploi o', 'o.id = ca.offre_emploi_id')
+            ->where('o.poste_id', $positionId)->where('ca.statut', 'RETENUE')->countAllResults() === 0;
+    }
+
+    private function positionAvailableForSelection(int $positionId, int $applicationId): bool
+    {
+        if ($this->db->tableExists('affectation')
+            && $this->db->table('affectation')->where('poste_id', $positionId)->where('date_fin IS NULL', null, false)->countAllResults() > 0) {
+            return false;
+        }
+        return $this->db->table('candidature ca')->join('offre_emploi o', 'o.id = ca.offre_emploi_id')
+            ->where('o.poste_id', $positionId)->where('ca.statut', 'RETENUE')->where('ca.id !=', $applicationId)->countAllResults() === 0;
     }
 
     private function statusTransaction($model, string $entity, array $old, string $next, string $action, array $extra = [], string $comment = ''): array

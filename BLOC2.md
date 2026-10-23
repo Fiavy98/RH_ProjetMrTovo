@@ -13,6 +13,18 @@ La branche Bloc 1 doit être fusionnée et migrée avant les migrations Bloc 2. 
 
 Avec l’accord du responsable du Bloc 1, `UpdateDemandePoste.php` et `AddTypeContratToDemande.php` ont été rendues idempotentes. Elles vérifient l’état réel du schéma, conservent les objets déjà conformes, créent le référentiel partagé `type_contrat` uniquement s’il manque et refusent les structures incompatibles. La correction est détaillée dans `database/bloc2/bloc1_common_migration_proposal.md` et testée par `tests/database/CommonMigrationCompatibilityRunner.php`.
 
+## Rattachement à un poste précis
+
+- Une demande peut continuer à produire plusieurs lignes `poste` selon la logique du Bloc 1, qui n'est pas modifiée.
+- Chaque offre du Bloc 2 doit désormais référencer une seule de ces lignes avec `offre_emploi.poste_id`.
+- Le poste choisi doit appartenir à la demande approuvée associée à l'offre.
+- Deux offres au statut `BROUILLON` ou `PUBLIEE` ne peuvent pas viser simultanément le même poste.
+- Plusieurs personnes peuvent candidater à l'offre, mais une seule candidature peut obtenir le statut `RETENUE` pour ce poste.
+- Si la table `affectation` est disponible, un poste ayant déjà un titulaire actif ne peut plus être recruté.
+- Le Bloc 2 ne crée ni employé ni affectation. Le Bloc 3 reste inchangé et peut retrouver le poste par `candidature -> offre_emploi -> poste`.
+
+La migration additive `2026-10-23-090000_LinkOffersToPositions.php` conserve les anciennes offres : leur `poste_id` reste temporairement nullable jusqu'à correction manuelle. Toute nouvelle création ou publication exige cependant un poste valide.
+
 ## Entretiens et participants
 
 - Une candidature `PRESELECTIONNEE` passe à `EN_ENTRETIEN` lors de sa première planification.

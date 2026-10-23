@@ -29,6 +29,7 @@ class Bloc2Controller extends BaseController
         if ($id && $offer === null) { throw PageNotFoundException::forPageNotFound(); }
         return $this->render('offer_form', $id ? 'Modifier l’offre' : 'Créer une offre', [
             'offer' => $offer, 'requests' => $this->recruitment->approvedRequests($offer['demande_recrutement_id'] ?? null),
+            'positions' => $this->recruitment->availablePositions($id),
         ]);
     }
 
