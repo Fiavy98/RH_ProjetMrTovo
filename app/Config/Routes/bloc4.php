@@ -6,7 +6,7 @@
  *
  * Écrans du prototype, rendus par le contrôleur et le service du bloc.
  */
-$routes->group('bloc4', ['namespace' => 'App\\Controllers\\Bloc4'], static function ($routes) {
+$routes->group('bloc4', ['namespace' => 'App\\Controllers\\Bloc4', 'filter' => 'auth'], static function ($routes) {
     $routes->get('/', 'Bloc4Controller::index');
     $routes->get('contracts', 'ContratController::index');
     $routes->get('contract-form', 'ContratController::createForm');

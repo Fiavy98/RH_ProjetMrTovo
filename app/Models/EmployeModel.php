@@ -18,7 +18,7 @@ class EmployeModel extends SirhModel
     protected $table      = 'employe';
     protected $returnType = Employe::class;
 
-    // `mot_de_passe` est volontairement absent : l'authentification est repoussée (P4), on ne stocke aucun mot de passe.
+    // `mot_de_passe` reste absent : ce module utilise une sélection sans mot de passe.
     protected $allowedFields = [
         'matricule',
         'nom',

@@ -6,7 +6,7 @@
  *
  * Écrans du prototype, rendus par le contrôleur et le service du bloc.
  */
-$routes->group('bloc2', ['namespace' => 'App\\Controllers\\Bloc2'], static function ($routes) {
+$routes->group('bloc2', ['namespace' => 'App\\Controllers\\Bloc2', 'filter' => 'auth'], static function ($routes) {
     $routes->get('/', 'Bloc2Controller::index');
     $routes->get('dashboard', 'Bloc2Controller::dashboard');
     $routes->get('offers', 'Bloc2Controller::offers');

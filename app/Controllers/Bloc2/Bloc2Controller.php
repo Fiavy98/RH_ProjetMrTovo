@@ -94,14 +94,10 @@ class Bloc2Controller extends BaseController
 
     private function render(string $view, string $title, array $data = []): string
     {
-        if (ui_role() !== 'rh') { throw PageNotFoundException::forPageNotFound(); }
         return view('bloc2/' . $view, ['pageTitle' => $title] + $data);
     }
     private function hr(callable $operation, string $fallback)
     {
-        if (ui_role() !== 'rh') {
-            return $this->result(['ok' => false, 'message' => 'Action réservée aux Ressources humaines.'], $fallback);
-        }
         return $this->result($operation(), $fallback);
     }
     private function result(array $result, string $fallback)

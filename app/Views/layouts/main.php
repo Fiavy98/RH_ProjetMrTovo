@@ -4,9 +4,7 @@
  * Une vue l'utilise avec :  <?= $this->extend('layouts/main') ?>  puis  <?= $this->section('content') ?> ... <?= $this->endSection() ?>
  * Variable optionnelle : $pageTitle (titre affiché dans le fil d'Ariane et l'onglet).
  */
-$roles       = ui_roles();
-$currentRole = ui_role();
-$me          = $roles[$currentRole];
+$me          = ui_current_user();
 $currentPath = trim(uri_string(), '/');
 $pageTitle   = $pageTitle ?? 'Tableau de bord';
 ?>
@@ -48,7 +46,7 @@ $pageTitle   = $pageTitle ?? 'Tableau de bord';
             </div>
         <?php endforeach; ?>
 
-        <div class="nav-foot">● Mode développement<br>Rôles de démonstration, sans sécurité réelle.</div>
+        <div class="nav-foot">● Mode développement<br>Sélection d’utilisateur sans mot de passe.</div>
     </aside>
 
     <div class="main-area">
@@ -60,21 +58,15 @@ $pageTitle   = $pageTitle ?? 'Tableau de bord';
             </div>
             <div class="top-right">
                 <span class="badge blue">DÉMO</span>
-                <?php if (ENVIRONMENT !== 'production'): ?>
-                    <form method="post" action="<?= site_url('dev/role') ?>" class="role-form">
-                        <?= csrf_field() ?>
-                        <select class="role-switch" name="role" data-role-select aria-label="Changer de rôle de démonstration">
-                            <?php foreach ($roles as $key => $role): ?>
-                                <option value="<?= esc($key, 'attr') ?>" <?= $key === $currentRole ? 'selected' : '' ?>><?= esc($role['label']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </form>
-                <?php endif; ?>
                 <div class="avatar"><?= esc($me['initials']) ?></div>
                 <div>
                     <div class="profile-title"><?= esc($me['name']) ?></div>
-                    <div class="profile-sub"><?= esc($me['label']) ?></div>
+                    <div class="profile-sub"><?= esc($me['label']) ?> · <?= esc($me['department']) ?></div>
                 </div>
+                <form method="post" action="<?= site_url('auth/logout') ?>" style="margin-left:12px">
+                    <?= csrf_field() ?>
+                    <button class="icon-btn" type="submit" aria-label="Se déconnecter" title="Se déconnecter">↪</button>
+                </form>
             </div>
         </header>
 

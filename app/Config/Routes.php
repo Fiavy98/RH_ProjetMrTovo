@@ -8,12 +8,14 @@ use CodeIgniter\Router\RouteCollection;
  * Ce fichier ne change presque jamais : chaque bloc déclare ses routes dans SON fichier
  * (app/Config/Routes/blocN.php), ce qui évite les conflits Git entre équipiers.
  */
-$routes->get('/', 'Home::index');
+$routes->get('/', 'Home::index', ['filter' => 'auth']);
+$routes->get('auth', 'AuthController::index');
+$routes->post('auth/select', 'AuthController::select');
+$routes->post('auth/logout', 'AuthController::logout', ['filter' => 'auth']);
 
 // Outils de développement (désactivés en production)
 if (ENVIRONMENT !== 'production') {
-    $routes->get('dev/db', 'Dev::db');
-    $routes->post('dev/role', 'Dev::role');
+    $routes->get('dev/db', 'Dev::db', ['filter' => 'auth']);
 }
 
 // Routes de chaque bloc

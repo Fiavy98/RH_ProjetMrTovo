@@ -28,7 +28,6 @@ use CodeIgniter\Exceptions\PageNotFoundException;
 /**
  * Outils de développement (désactivés en production) :
  *  - /dev/db   : contrôle de la connexion et des Models
- *  - /dev/role : changement du rôle de démonstration (stocké en session, aucune sécurité réelle)
  */
 class Dev extends BaseController
 {
@@ -81,20 +80,6 @@ class Dev extends BaseController
             'employes'  => $employes,
             'dbError'   => $dbError,
         ]);
-    }
-
-    public function role()
-    {
-        $this->bloquerEnProduction();
-
-        $role = (string) $this->request->getPost('role');
-
-        if (isset(ui_roles()[$role])) {
-            session()->set('role', $role);
-            session()->setFlashdata('success', 'Rôle de démonstration : ' . ui_roles()[$role]['label']);
-        }
-
-        return redirect()->back();
     }
 
     private function bloquerEnProduction(): void

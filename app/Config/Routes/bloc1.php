@@ -1,7 +1,7 @@
 <?php
 
 /** Routes du Bloc 1 : expression du besoin. */
-$routes->group('bloc1', ['namespace' => 'App\\Controllers\\Bloc1'], static function ($routes) {
+$routes->group('bloc1', ['namespace' => 'App\\Controllers\\Bloc1', 'filter' => ['auth', 'bloc1access']], static function ($routes) {
     $routes->get('/', 'Bloc1Controller::index');
     $routes->get('rh-review/(:num)', 'RhController::detail/$1');
     $routes->post('rh-review/(:num)', 'RhController::decision/$1');

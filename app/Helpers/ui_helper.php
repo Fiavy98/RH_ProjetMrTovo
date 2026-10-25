@@ -10,35 +10,41 @@
  */
 
 if (! function_exists('ui_roles')) {
-    /**
-     * Rôles de DÉMONSTRATION (cadrage : Manager, RH, Direction, Administrateur).
-     * Ils ne servent qu'à afficher les bons menus : aucune sécurité réelle avant le choix de l'authentification (P4).
-     */
     function ui_roles(): array
     {
         return [
-            'manager'   => ['label' => 'Manager',              'name' => 'Manager (démo)',        'initials' => 'MG'],
-            'rh'        => ['label' => 'Ressources humaines',  'name' => 'RH (démo)',             'initials' => 'RH'],
-            'direction' => ['label' => 'Direction',            'name' => 'Direction (démo)',      'initials' => 'DI'],
-            'admin'     => ['label' => 'Administrateur',       'name' => 'Administrateur (démo)', 'initials' => 'AD'],
+            'manager'   => ['label' => 'Manager'],
+            'rh'        => ['label' => 'Ressources humaines'],
+            'finance'   => ['label' => 'Finance'],
+            'direction' => ['label' => 'Direction'],
+            'admin'     => ['label' => 'Super administrateur'],
+        ];
+    }
+}
+
+if (! function_exists('ui_current_user')) {
+    function ui_current_user(): array
+    {
+        $user = session()->get('auth_user');
+
+        return is_array($user) ? $user : [
+            'id' => 0, 'name' => 'Utilisateur', 'label' => '', 'department' => '', 'initials' => '—',
         ];
     }
 }
 
 if (! function_exists('ui_role')) {
-    /** Rôle de démonstration courant (session), « rh » par défaut. */
     function ui_role(): string
     {
         $role = session()->get('role');
 
-        return is_string($role) && isset(ui_roles()[$role]) ? $role : 'rh';
+        return is_string($role) && isset(ui_roles()[$role]) ? $role : 'manager';
     }
 }
 
 if (! function_exists('ui_menu')) {
     /**
-     * Construit le menu latéral : Accueil, un groupe par bloc (app/Config/Menu/blocN.php), outils de développement.
-     * Les entrées sont filtrées selon le rôle de démonstration courant.
+     * Construit le menu latéral : Accueil, un groupe par bloc et les outils de développement.
      */
     function ui_menu(): array
     {

@@ -25,14 +25,19 @@ class DemandeService extends BlocPageService
 
     public function allRequests(): array
     {
-        return (new DemandeModel())
+        $model = (new DemandeModel())
             ->select('demande.*, demandeur.nom AS demandeur_nom, demandeur.prenom AS demandeur_prenom, departement.nom_departement, status.code AS status_code, status.libelle AS status_libelle, type_contrat.libelle AS type_contrat_libelle')
             ->join('employe demandeur', 'demandeur.id = demande.demandeur_id')
             ->join('departement', 'departement.id = demande.departement_id')
             ->join('status', 'status.id = demande.status_id')
             ->join('type_contrat', 'type_contrat.id = demande.type_contrat_id', 'left')
-            ->orderBy('demande.date_demande', 'DESC')
-            ->findAll();
+            ->orderBy('demande.date_demande', 'DESC');
+
+        if (ui_role() === 'manager') {
+            $model->where('demande.demandeur_id', (int) session()->get('auth_employee_id'));
+        }
+
+        return $model->findAll();
     }
 
     /** @return array{departments: list<object>, contracts: list<object>, employee: ?object, formReady: bool, formError: string} */
@@ -40,10 +45,7 @@ class DemandeService extends BlocPageService
     {
         $departments = (new DepartementModel())->orderBy('nom_departement', 'ASC')->findAll();
         $contracts = (new TypeContratModel())->orderBy('libelle', 'ASC')->findAll();
-        $employee = (new EmployeModel())
-            ->where('actif', true)
-            ->orderBy('id', 'ASC')
-            ->first();
+        $employee = $this->currentEmployee();
         $status = (new StatusModel())
             ->where('actif', true)
             ->where('code', 'RH_attente')
@@ -70,10 +72,7 @@ class DemandeService extends BlocPageService
             return parent::save($slug, $input);
         }
 
-        $employee = (new EmployeModel())
-            ->where('actif', true)
-            ->orderBy('id', 'ASC')
-            ->first();
+        $employee = $this->currentEmployee();
         $status = (new StatusModel())
             ->where('actif', true)
             ->where('code', 'RH_attente')
@@ -126,6 +125,15 @@ class DemandeService extends BlocPageService
         }
 
         return ['ok' => true, 'message' => 'La demande a été enregistrée.'];
+    }
+
+    private function currentEmployee(): ?object
+    {
+        $id = (int) session()->get('auth_employee_id');
+
+        return $id > 0
+            ? (new EmployeModel())->where('actif', true)->find($id)
+            : null;
     }
 
 }
