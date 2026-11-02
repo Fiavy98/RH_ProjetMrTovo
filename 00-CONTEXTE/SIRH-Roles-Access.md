@@ -2,9 +2,7 @@
 
 ## Portée
 
-Ce document récapitule les pages accessibles depuis les menus de l’application, les rôles actuellement contrôlés côté serveur et les rôles recommandés.
-
-> **Important :** le Bloc 1 possède un filtre d’accès par rôle. Les routes des Blocs 2, 3 et 4 vérifient seulement qu’un utilisateur a une session ouverte : les rôles recommandés dans les tableaux ci-dessous doivent donc être appliqués côté serveur. Masquer un lien dans le menu ne suffit pas à protéger une page ou une action.
+Ce document décrit les pages et les rôles autorisés dans l’application. Les règles des Blocs 2, 3 et 4 sont contrôlées côté serveur par un filtre de routes et les menus sont alignés sur ces règles. Le Bloc 1 est conservé tel quel.
 
 Rôles considérés : **Manager**, **RH**, **Finance**, **Direction**, **Administrateur**. Dans le cadrage V1, le candidat et le salarié n’accèdent pas à l’application ; leurs données sont saisies ou gérées par la RH.
 
@@ -30,48 +28,52 @@ Rôles considérés : **Manager**, **RH**, **Finance**, **Direction**, **Adminis
 
 ## Bloc 2 — Recrutement
 
-Le groupe de routes actuel exige seulement une session. Les rôles recommandés ci-dessous doivent être **appliqués côté serveur**.
-
-| Page | Rôles recommandés |
+| Page | Rôles appliqués |
 |---|---|
-| Suivi du recrutement (`/bloc2/dashboard`) | RH et Administrateur ; éventuellement Direction pour une vue de synthèse |
+| Suivi du recrutement (`/bloc2/dashboard`) | RH et Administrateur |
 | Offres d’emploi (`/bloc2/offers`) | RH et Administrateur |
 | Créer/modifier une offre (`/bloc2/offers/new`, `/bloc2/offers/{id}`) | RH et Administrateur |
 | Candidats (`/bloc2/candidates`) | RH et Administrateur |
 | Candidatures (`/bloc2/applications`) | RH et Administrateur |
 | Présélection (`/bloc2/preselection`) | RH et Administrateur |
-| Entretiens (`/bloc2/interviews`) | RH pour planifier et gérer ; Manager uniquement pour consulter les entretiens auxquels il participe |
-| Évaluations (`/bloc2/evaluations`) | Manager participant à l’entretien ; RH et Administrateur selon le processus d’évaluation |
+| Entretiens (`/bloc2/interviews`) | RH et Administrateur pour gérer ; Manager pour lire les entretiens où il est participant |
+| Évaluations (`/bloc2/evaluations`) | RH et Administrateur pour consulter et saisir ; Manager participant pour consulter et soumettre son propre avis |
 | Décision finale (`/bloc2/decisions`) | RH et Administrateur |
-| Historique recrutement (`/bloc2/recruitment-history`) | RH et Administrateur ; Direction en consultation si nécessaire |
+| Historique recrutement (`/bloc2/recruitment-history`) | RH et Administrateur |
+
+Le Manager est filtré par son identifiant salarié pour les entretiens et évaluations. Lorsqu’il soumet une évaluation, le serveur utilise son identifiant de session comme évaluateur et refuse l’accès aux entretiens auxquels il ne participe pas. Les actions de gestion des entretiens lui sont refusées.
 
 ## Bloc 3 — Sélection et embauche
 
-Le groupe de routes actuel exige seulement une session. Les rôles recommandés ci-dessous doivent être **appliqués côté serveur**.
-
-| Page | Rôles recommandés |
+| Page | Rôles appliqués |
 |---|---|
 | Candidats retenus (`/bloc3/selected`) | RH et Administrateur |
 | Proposition d’embauche (`/bloc3/proposal-form`) | RH et Administrateur |
-| Réponses candidats (`/bloc3/responses`) | RH et Administrateur — la réponse du candidat est enregistrée par la RH |
+| Réponses candidats (`/bloc3/responses`) | RH et Administrateur |
 | Validation Direction (`/bloc3/hire-validations`) | Direction et Administrateur |
-| Dossiers salariés (`/bloc3/employees`) | RH et Administrateur ; Direction en consultation si nécessaire |
+| Dossiers salariés (`/bloc3/employees`) | RH et Administrateur |
 
-## Bloc 4 — Contrats
+La Direction n’a accès qu’aux routes de validation d’embauche du Bloc 3. RH et Administrateur peuvent accéder aux autres pages et actions du bloc.
 
-Le groupe de routes actuel exige seulement une session. Les rôles recommandés ci-dessous doivent être **appliqués côté serveur**.
+## Bloc 4 — Contrats et onboarding
 
-| Page | Rôles recommandés |
+| Page | Rôles appliqués |
 |---|---|
 | Liste des contrats (`/bloc4/contracts`) | RH et Administrateur |
 | Nouveau/modifier un contrat (`/bloc4/contract-form`) | RH et Administrateur |
 | Renouvellements (`/bloc4/renewals`) | RH et Administrateur |
 | Affectations (`/bloc4/assignment-b4`) | RH et Administrateur |
 | Documents (`/bloc4/documents`, `/bloc4/document-form`) | RH et Administrateur |
-| Liste des onboardings (`/bloc4/onboardings`) | RH et Administrateur ; Manager en consultation pour son équipe |
-| Détail et suivi des tâches (`/bloc4/onboarding-detail/{id}`) | RH pour modifier ; Manager en consultation ou participation limitée à son équipe |
-| Paramètres des contrats (`/bloc4/contract-settings`) | Administrateur pour modifier ; RH éventuellement en consultation |
+| Liste des onboardings (`/bloc4/onboardings`) | RH et Administrateur ; Manager en lecture seule pour son département |
+| Détail des tâches (`/bloc4/onboarding-detail/{id}`) | RH pour modifier ; Manager en lecture seule pour son département |
+| Paramètres des contrats (`/bloc4/contract-settings`) | RH et Administrateur en lecture seule (aucune route de modification n’existe actuellement) |
 
-## Mise en œuvre de l’accès
+La base ne contient pas de lien explicite entre un Manager et les salariés qu’il encadre. En attendant ce lien, le périmètre « son équipe » est représenté par les salariés du même département. Un Manager sans département n’obtient aucun onboarding. Les actions d’enregistrement de tâches lui sont refusées côté serveur.
 
-Les menus des Blocs 2, 3 et 4 ne filtrent actuellement pas les entrées par rôle. Il faut ajouter les autorisations serveur aux routes de lecture **et** aux actions POST, puis aligner l’affichage des menus sur les mêmes règles. Pour les pages qui incluent des données sensibles, les filtres doivent aussi limiter les enregistrements visibles (par exemple, un Manager ne voit que ses demandes ou les entretiens auxquels il participe).
+## Règles communes appliquées
+
+- Les routes des Blocs 2, 3 et 4 exigent une session et passent par un filtre de rôle. Les accès interdits renvoient HTTP 403.
+- Administrateur est autorisé sur toutes les routes de ces trois blocs.
+- Les menus des Blocs 2, 3 et 4 n’affichent que les pages autorisées au rôle courant. Le menu du Bloc 1 n’a pas été modifié.
+- Finance n’a pas d’accès aux Blocs 2, 3 et 4.
+- La sélection de profil à l’authentification reste un mécanisme de démonstration sans mot de passe ; les permissions décrites ici s’appliquent au rôle de session choisi.

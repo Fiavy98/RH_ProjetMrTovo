@@ -14,6 +14,7 @@ use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\AuthFilter;
 use App\Filters\Bloc1AccessFilter;
+use App\Filters\BlocRoleAccessFilter;
 
 class Filters extends BaseFilters
 {
@@ -38,6 +39,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'auth'          => AuthFilter::class,
         'bloc1access'   => Bloc1AccessFilter::class,
+        'blocroles'     => BlocRoleAccessFilter::class,
     ];
 
     /**

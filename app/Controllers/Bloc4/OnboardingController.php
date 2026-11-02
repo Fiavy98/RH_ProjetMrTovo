@@ -17,18 +17,20 @@ class OnboardingController extends BaseController
 
     public function index(): string
     {
+        $departmentId = $this->managerDepartmentId();
         return view('bloc4/onboarding/index', [
             'pageTitle' => 'Liste des onboardings',
-            'onboardings' => $this->onboardings->liste($this->request->getGet() ?? []),
+            'onboardings' => $this->onboardings->liste($this->request->getGet() ?? [], $departmentId),
             'filter' => $this->request->getGet('statut'),
         ]);
     }
 
     public function show(int $id): string
     {
-        $onboarding = $this->onboardings->detail($id);
+        $departmentId = $this->managerDepartmentId();
+        $onboarding = $this->onboardings->detail($id, $departmentId);
         if ($onboarding === null) throw PageNotFoundException::forPageNotFound();
-        return view('bloc4/onboarding/detail', ['pageTitle' => 'Onboarding du salarié', 'onboarding' => $onboarding]);
+        return view('bloc4/onboarding/detail', ['pageTitle' => 'Onboarding du salarié', 'onboarding' => $onboarding, 'readOnly' => ui_role() === 'manager']);
     }
 
     public function save(int $id)
@@ -36,5 +38,13 @@ class OnboardingController extends BaseController
         $result = $this->onboardings->enregistrerTaches($id, $this->request->getPost() ?? []);
         session()->setFlashdata($result['ok'] ? 'success' : 'error', $result['message']);
         return redirect()->to(site_url('bloc4/onboarding-detail/' . $id));
+    }
+
+    private function managerDepartmentId(): ?int
+    {
+        if (ui_role() !== 'manager') return null;
+        $employeeId = (int) session()->get('auth_employee_id');
+        $employee = db_connect()->table('employe')->select('departement_id')->where('id', $employeeId)->get()->getRowArray();
+        return ! empty($employee['departement_id']) ? (int) $employee['departement_id'] : -1;
     }
 }

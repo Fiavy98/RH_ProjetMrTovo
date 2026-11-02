@@ -179,9 +179,13 @@ class RecruitmentService
             $next === 'REJETEE' ? 'CANDIDATURE_REJETEE' : 'CANDIDATURE_PRESELECTIONNEE', [], $reason);
     }
 
-    public function interviews(array $filters = []): array
+    public function interviews(array $filters = [], ?int $participantEmployeeId = null): array
     {
         $b = $this->interviewQuery()->orderBy('e.date_entretien', 'DESC');
+        if ($participantEmployeeId !== null) {
+            $b->join('entretien_participant ep', 'ep.entretien_id = e.id')
+                ->where('ep.employe_id', $participantEmployeeId);
+        }
         if (! empty($filters['statut'])) { $b->where('e.statut', $filters['statut']); }
         return $b->get()->getResultArray();
     }
@@ -236,8 +240,23 @@ class RecruitmentService
             $next === 'REALISE' ? 'ENTRETIEN_REALISE' : 'ENTRETIEN_ANNULE', $report ? ['compte_rendu' => $report] : []);
     }
 
-    public function completedInterviews(): array { return $this->interviewQuery()->where('e.statut', 'REALISE')->orderBy('e.date_entretien', 'DESC')->get()->getResultArray(); }
-    public function evaluations(int $interviewId): array { return $this->db->table('evaluation_candidat ev')->select('ev.*, emp.nom AS evaluateur_nom, emp.prenom AS evaluateur_prenom')->join('employe emp', 'emp.id = ev.evaluateur_id', 'left')->where('ev.entretien_id', $interviewId)->orderBy('ev.id', 'DESC')->get()->getResultArray(); }
+    public function completedInterviews(?int $participantEmployeeId = null): array
+    {
+        $builder = $this->interviewQuery()->where('e.statut', 'REALISE')->orderBy('e.date_entretien', 'DESC');
+        if ($participantEmployeeId !== null) {
+            $builder->join('entretien_participant ep', 'ep.entretien_id = e.id')
+                ->where('ep.employe_id', $participantEmployeeId);
+        }
+        return $builder->get()->getResultArray();
+    }
+
+    public function evaluations(int $interviewId, ?int $evaluatorId = null): array
+    {
+        $builder = $this->db->table('evaluation_candidat ev')->select('ev.*, emp.nom AS evaluateur_nom, emp.prenom AS evaluateur_prenom')
+            ->join('employe emp', 'emp.id = ev.evaluateur_id', 'left')->where('ev.entretien_id', $interviewId);
+        if ($evaluatorId !== null) $builder->where('ev.evaluateur_id', $evaluatorId);
+        return $builder->orderBy('ev.id', 'DESC')->get()->getResultArray();
+    }
     public function employees(): array { return $this->db->table('employe')->select('id, nom, prenom, matricule')->where('actif', true)->orderBy('nom')->get()->getResultArray(); }
 
     public function interviewParticipants(int $interviewId): array
