@@ -77,3 +77,7 @@ La base ne contient pas de lien explicite entre un Manager et les salariés qu�
 - Les menus des Blocs 2, 3 et 4 n’affichent que les pages autorisées au rôle courant. Le menu du Bloc 1 n’a pas été modifié.
 - Finance n’a pas d’accès aux Blocs 2, 3 et 4.
 - La sélection de profil à l’authentification reste un mécanisme de démonstration sans mot de passe ; les permissions décrites ici s’appliquent au rôle de session choisi.
+
+## Blocs 5 à 7 — Squelettes en cours de cadrage
+
+Les routes des Blocs 5, 6 et 7 ne sont pour l’instant que des maquettes statiques protégées par la session. Elles affichent des exemples fictifs et ne lisent ni n’enregistrent de données métier. Aucun rôle métier n’est encore appliqué à ces blocs. Avant leur raccordement aux données réelles, il faudra définir les habilitations, notamment pour les salaires et dossiers administratifs du Bloc 5, les pointages du Bloc 6 et les soldes/justificatifs du Bloc 7.

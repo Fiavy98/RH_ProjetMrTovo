@@ -53,7 +53,7 @@ if (! function_exists('ui_menu')) {
             ['title' => 'Vue générale', 'items' => [['label' => 'Accueil', 'url' => '', 'icon' => '◧']]],
         ];
 
-        foreach ([1, 2, 3, 4] as $n) {
+        foreach ([1, 2, 3, 4, 5, 6, 7] as $n) {
             $file = APPPATH . "Config/Menu/bloc{$n}.php";
 
             if (is_file($file)) {
