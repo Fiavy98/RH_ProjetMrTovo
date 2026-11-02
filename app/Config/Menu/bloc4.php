@@ -4,9 +4,8 @@
  * Entrées de menu du Bloc 4, accessibles à tous les utilisateurs connectés.
  */
 return [
-    'title' => 'Bloc 4 · Contrats',
+    'title' => 'Contrats',
     'items' => [
-        ['label' => 'Suivi contrats et onboarding', 'url' => 'bloc4/dashboard', 'icon' => '◧'],
         ['label' => 'Liste des contrats', 'url' => 'bloc4/contracts', 'icon' => '▤'],
         ['label' => 'Nouveau contrat', 'url' => 'bloc4/contract-form', 'icon' => '＋'],
         ['label' => 'Renouvellements', 'url' => 'bloc4/renewals', 'icon' => '⟳'],

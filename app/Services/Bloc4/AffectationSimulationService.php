@@ -19,10 +19,6 @@ class AffectationSimulationService
     public function pageData(): array
     {
         $employes = $this->db->table('employe')->select('id, matricule, nom, prenom')->orderBy('nom')->get()->getResultArray();
-        $postes = $this->db->table('poste p')->select('p.id, p.intitule, d.nom_departement')
-            ->join('departement d', 'd.id = p.departement_id')
-            ->join('status s', 's.id = p.status_id')->where('s.code', 'VACANT')
-            ->orderBy('p.intitule')->get()->getResultArray();
         $affectations = $this->db->table('affectation a')
             ->select('a.id, a.employe_id, a.poste_id, a.date_debut, a.date_fin, e.matricule, e.nom, e.prenom, p.intitule')
             ->join('employe e', 'e.id = a.employe_id')->join('poste p', 'p.id = a.poste_id')
@@ -30,6 +26,13 @@ class AffectationSimulationService
 
         $activeEmployees = array_column(array_filter($affectations, static fn ($row) => $row['date_fin'] === null), 'employe_id');
         $activePositions = array_column(array_filter($affectations, static fn ($row) => $row['date_fin'] === null), 'poste_id');
+        $postesQuery = $this->db->table('poste p')->select('p.id, p.intitule, d.nom_departement')
+            ->join('departement d', 'd.id = p.departement_id');
+        if ($activePositions !== []) {
+            $postesQuery->whereNotIn('p.id', array_map('intval', $activePositions));
+        }
+        $postes = $postesQuery->orderBy('p.intitule')->get()->getResultArray();
+
         return [
             'employes' => $employes,
             'postes' => $postes,
@@ -50,9 +53,8 @@ class AffectationSimulationService
             return ['ok' => false, 'message' => 'Saisissez une date de début valide.'];
         }
         if (! $this->db->table('employe')->where('id', $employeeId)->countAllResults()) return ['ok' => false, 'message' => 'Sélectionnez un employé existant.'];
-        $vacantPosition = $this->db->table('poste p')->select('p.id')->join('status s', 's.id = p.status_id')
-            ->where('p.id', $positionId)->where('s.code', 'VACANT')->get()->getRowArray();
-        if ($vacantPosition === null) return ['ok' => false, 'message' => 'Sélectionnez un poste vacant.'];
+        $position = $this->db->table('poste')->select('id')->where('id', $positionId)->get()->getRowArray();
+        if ($position === null) return ['ok' => false, 'message' => 'Sélectionnez un poste existant.'];
         if ($this->db->table('affectation')->where('employe_id', $employeeId)->where('date_fin IS NULL', null, false)->countAllResults()) {
             return ['ok' => false, 'message' => 'Cet employé possède déjà une affectation active. Clôturez-la avant d’en créer une autre.'];
         }
@@ -70,8 +72,7 @@ class AffectationSimulationService
             ]);
             if (! $ok) throw new \RuntimeException('L’affectation n’a pas pu être enregistrée.');
             $filledStatus = $this->db->table('status')->select('id')->where('code', 'POURVU')->get()->getRowArray();
-            if ($filledStatus === null) throw new \RuntimeException('Le statut POURVU n’est pas configuré.');
-            if (! $this->db->table('poste')->where('id', $positionId)->update(['status_id' => $filledStatus['id']])) {
+            if ($filledStatus !== null && ! $this->db->table('poste')->where('id', $positionId)->update(['status_id' => $filledStatus['id']])) {
                 throw new \RuntimeException('Le statut du poste n’a pas pu être mis à jour.');
             }
             $this->db->transCommit();

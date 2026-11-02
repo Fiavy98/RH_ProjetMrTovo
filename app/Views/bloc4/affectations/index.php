@@ -5,7 +5,7 @@
 <div class="grid2"><form method="post" action="<?= site_url('bloc4/assignment-b4') ?>"><?= csrf_field() ?><div class="panel"><div class="panel-head"><div><h2 class="panel-title">Nouvelle affectation de simulation</h2></div></div><div class="panel-body"><div class="form-grid">
 <?php $employeeOptions = []; foreach ($employesLibres as $employee) $employeeOptions[$employee['id']] = $employee['matricule'] . ' · ' . $employee['prenom'] . ' ' . $employee['nom']; ?>
 <?= ui_field('employe_id', 'Salarié', 'select', '', ['required' => true, 'options' => $employeeOptions]) ?>
-<?php $positionOptions = []; foreach ($postesLibres as $position) $positionOptions[$position['id']] = $position['intitule'] . ' · ' . $position['nom_departement']; ?>
+<?php $positionOptions = ['' => $postesLibres === [] ? 'Aucun poste libre' : 'Sélectionner un poste']; foreach ($postesLibres as $position) $positionOptions[$position['id']] = $position['intitule'] . ' · ' . $position['nom_departement']; ?>
 <?= ui_field('poste_id', 'Poste', 'select', '', ['required' => true, 'options' => $positionOptions]) ?>
 <?= ui_field('date_debut', 'Date de début', 'date', date('Y-m-d'), ['required' => true]) ?>
 </div><div class="form-actions"><button class="btn btn-primary" type="submit">Enregistrer l’affectation</button></div></div></div></form>
