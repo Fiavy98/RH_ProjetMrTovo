@@ -19,6 +19,6 @@ if (ENVIRONMENT !== 'production') {
 }
 
 // Routes de chaque bloc
-foreach ([1, 2, 3, 4] as $n) {
+foreach ([1, 2, 3, 4, 5, 6, 7] as $n) {
     require APPPATH . "Config/Routes/bloc{$n}.php";
 }
