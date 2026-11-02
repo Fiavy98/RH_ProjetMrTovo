@@ -16,7 +16,7 @@ class OnboardingService
         $this->db = $db ?? db_connect();
     }
 
-    public function liste(array $filters = []): array
+    public function liste(array $filters = [], ?int $departmentId = null): array
     {
         $builder = $this->db->table('onboarding o')
             ->select("o.id, o.employe_id, o.statut, o.cree_le, e.matricule, e.nom, e.prenom, COUNT(t.id) AS total_taches, SUM(CASE WHEN t.statut = 'termine' THEN 1 ELSE 0 END) AS taches_terminees")
@@ -25,15 +25,18 @@ class OnboardingService
             ->groupBy('o.id, e.matricule, e.nom, e.prenom')
             ->orderBy('o.cree_le', 'DESC');
         if (! empty($filters['statut'])) $builder->where('o.statut', $filters['statut']);
+        if ($departmentId !== null) $builder->where('e.departement_id', $departmentId);
         return $builder->get()->getResultArray();
     }
 
-    public function detail(int $id): ?array
+    public function detail(int $id, ?int $departmentId = null): ?array
     {
-        $onboarding = $this->db->table('onboarding o')
+        $builder = $this->db->table('onboarding o')
             ->select('o.*, e.matricule, e.nom, e.prenom')
             ->join('employe e', 'e.id = o.employe_id')
-            ->where('o.id', $id)->get()->getRowArray();
+            ->where('o.id', $id);
+        if ($departmentId !== null) $builder->where('e.departement_id', $departmentId);
+        $onboarding = $builder->get()->getRowArray();
         if ($onboarding === null) return null;
 
         $onboarding['taches'] = $this->db->table('onboarding_tache t')

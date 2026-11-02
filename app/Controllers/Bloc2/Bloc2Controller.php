@@ -66,7 +66,15 @@ class Bloc2Controller extends BaseController
     public function saveApplication() { return $this->hr(fn () => $this->recruitment->saveApplication($this->request->getPost()), 'bloc2/applications'); }
     public function applicationStatus(int $id) { return $this->hr(fn () => $this->recruitment->changeApplicationStatus($id, $this->request->getPost()), 'bloc2/preselection'); }
     public function preselection(): string { return $this->render('preselection', 'Présélection', ['applications' => $this->recruitment->applicationsForPreselection()]); }
-    public function interviews(): string { return $this->render('interviews', 'Planning des entretiens', ['interviews' => $this->recruitment->interviews($this->request->getGet())]); }
+    public function interviews(): string
+    {
+        $isManager = ui_role() === 'manager';
+        $participantId = $isManager ? (int) session()->get('auth_employee_id') : null;
+        return $this->render('interviews', 'Planning des entretiens', [
+            'interviews' => $this->recruitment->interviews($this->request->getGet(), $participantId),
+            'canManage' => ! $isManager,
+        ]);
+    }
 
     public function interviewForm(?int $id = null): string
     {
@@ -81,11 +89,38 @@ class Bloc2Controller extends BaseController
 
     public function saveInterview() { return $this->hr(fn () => $this->recruitment->saveInterview($this->request->getPost()), 'bloc2/interviews'); }
     public function interviewStatus(int $id) { return $this->hr(fn () => $this->recruitment->changeInterviewStatus($id, $this->request->getPost()), 'bloc2/interviews'); }
-    public function evaluations(?int $id = null): string { return $this->render('evaluations', 'Évaluations', [
-        'interviews' => $this->recruitment->completedInterviews(), 'selected' => $id ? $this->recruitment->interview($id) : null,
-        'evaluations' => $id ? $this->recruitment->evaluations($id) : [], 'employees' => $id ? $this->recruitment->interviewParticipants($id) : [],
-    ]); }
-    public function saveEvaluation() { $id = (int) $this->request->getPost('entretien_id'); return $this->hr(fn () => $this->recruitment->saveEvaluation($this->request->getPost()), 'bloc2/evaluations/' . $id); }
+    public function evaluations(?int $id = null): string
+    {
+        $isManager = ui_role() === 'manager';
+        $participantId = $isManager ? (int) session()->get('auth_employee_id') : null;
+        $interviews = $this->recruitment->completedInterviews($participantId);
+        $selected = $id ? $this->recruitment->interview($id) : null;
+        if ($id && ($selected === null || ! in_array((int) $id, array_map('intval', array_column($interviews, 'id')), true))) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $employees = $id ? $this->recruitment->interviewParticipants($id) : [];
+        if ($isManager) {
+            $employees = array_values(array_filter($employees, static fn (array $employee): bool => (int) $employee['id'] === $participantId));
+        }
+
+        return $this->render('evaluations', 'Évaluations', [
+            'interviews' => $interviews,
+            'selected' => $selected,
+            'evaluations' => $id ? $this->recruitment->evaluations($id, $participantId) : [],
+            'employees' => $employees,
+        ]);
+    }
+
+    public function saveEvaluation()
+    {
+        $input = $this->request->getPost() ?? [];
+        if (ui_role() === 'manager') {
+            $input['evaluateur_id'] = (int) session()->get('auth_employee_id');
+        }
+        $id = (int) ($input['entretien_id'] ?? 0);
+        return $this->result($this->recruitment->saveEvaluation($input), 'bloc2/evaluations/' . $id);
+    }
     public function decisions(): string { return $this->render('decisions', 'Décision finale', ['applications' => $this->recruitment->decisionFiles()]); }
     public function finalDecision(int $id) { return $this->hr(fn () => $this->recruitment->finalDecision($id, $this->request->getPost()), 'bloc2/decisions'); }
     public function history(): string { return $this->render('history', 'Historique recrutement', [

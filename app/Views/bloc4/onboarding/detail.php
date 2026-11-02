@@ -1,6 +1,14 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 <div class="page-head"><div><div class="eyebrow">BLOC 4 · ONBOARDING</div><h1>Onboarding de <?= esc($onboarding['prenom'] . ' ' . $onboarding['nom']) ?></h1><p><?= esc($onboarding['matricule']) ?> · Statut global : <?= ui_badge($onboarding['statut']) ?></p></div><div class="action-row"><a class="btn btn-secondary" href="<?= site_url('bloc4/onboardings') ?>">← Liste des onboardings</a></div></div>
+<?php if (!empty($readOnly)): ?>
+<?= ui_notice('Consultation en lecture seule des onboardings des salariés de votre département.') ?>
+<div class="panel"><div class="panel-head"><div><h2 class="panel-title">Les six tâches d'intégration</h2><p class="panel-sub">Suivi des tâches et de leur avancement.</p></div></div><div class="panel-body"><div class="table-wrap"><table><thead><tr><th>Tâche</th><th>Responsable (ID employé)</th><th>Échéance</th><th>Statut</th><th>Date de réalisation</th></tr></thead><tbody>
+<?php foreach ($onboarding['taches'] as $task): ?>
+<tr><td><?= esc($task['libelle']) ?></td><td><?= esc($task['responsable_id'] ?? '—') ?></td><td><?= esc($task['echeance'] ? date('d/m/Y', strtotime($task['echeance'])) : '—') ?></td><td><?= ui_badge($task['statut']) ?></td><td><?= esc($task['date_realisation'] ? date('d/m/Y', strtotime($task['date_realisation'])) : '—') ?></td></tr>
+<?php endforeach; ?>
+</tbody></table></div></div></div>
+<?php else: ?>
 <?= ui_notice('Modifiez les tâches ci-dessous puis enregistrez une seule fois. Le statut global de l’onboarding est calculé à partir des six tâches.') ?>
 <form method="post" action="<?= site_url('bloc4/onboarding-detail/' . $onboarding['id']) ?>"><?= csrf_field() ?><div class="panel"><div class="panel-head"><div><h2 class="panel-title">Les six tâches d'intégration</h2><p class="panel-sub">Les six lignes sont créées automatiquement au statut « À faire ».</p></div></div><div class="panel-body"><div class="table-wrap"><table><thead><tr><th>Tâche</th><th>Responsable (ID employé)</th><th>Échéance</th><th>Statut</th><th>Date de réalisation</th></tr></thead><tbody>
 <?php foreach ($onboarding['taches'] as $task): $taskId = (int) $task['id']; ?>
@@ -13,4 +21,5 @@
 </tr>
 <?php endforeach; ?>
 </tbody></table></div><div class="form-actions"><button class="btn btn-primary" type="submit">Enregistrer les six tâches</button></div></div></div></form>
+<?php endif; ?>
 <?= $this->endSection() ?>
