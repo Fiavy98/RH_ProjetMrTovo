@@ -14,21 +14,48 @@ class AuthController extends BaseController
         }
 
         $employees = $this->availableEmployees();
+        $profiles = $this->demoProfiles($employees);
 
         return view('auth/select', [
-            'pageTitle' => 'Choisir un utilisateur',
-            'employees' => $employees,
+            'pageTitle' => 'Connexion de démonstration',
+            'profiles'  => $profiles,
+            'hasProfiles' => count(array_filter(array_column($profiles, 'available'))) > 0,
             'error'     => session()->getFlashdata('error'),
         ]);
     }
 
     public function select()
     {
-        $employeeId = (int) $this->request->getPost('employee_id');
-        $employee = $this->availableEmployees($employeeId)[0] ?? null;
+        $profile = (string) $this->request->getPost('role');
+        $login = trim((string) $this->request->getPost('login'));
+        $password = (string) $this->request->getPost('password');
+        $profileRoles = [
+            'manager' => 'manager',
+            'responsable' => 'manager',
+            'rh' => 'rh',
+            'finance' => 'finance',
+            'direction' => 'direction',
+            'admin' => 'admin',
+        ];
+
+        if (! hash_equals('demo', $login) || ! hash_equals('demo', $password)) {
+            session()->setFlashdata('error', 'Identifiant ou mot de passe de démonstration invalide. Utilisez demo / demo.');
+            return redirect()->to(site_url('auth'));
+        }
+
+        $requiredRole = $profileRoles[$profile] ?? null;
+        $employee = null;
+        if ($requiredRole !== null) {
+            foreach ($this->availableEmployees() as $candidate) {
+                if ($this->roleKey((string) $candidate->nom_role) === $requiredRole) {
+                    $employee = $candidate;
+                    break;
+                }
+            }
+        }
 
         if ($employee === null) {
-            session()->setFlashdata('error', 'Veuillez sélectionner un utilisateur actif.');
+            session()->setFlashdata('error', 'Aucun utilisateur actif n’est configuré pour ce profil.');
             return redirect()->to(site_url('auth'));
         }
 
@@ -54,7 +81,7 @@ class AuthController extends BaseController
         return redirect()->to(site_url('auth'));
     }
 
-    private function availableEmployees(?int $id = null): array
+    private function availableEmployees(): array
     {
         $model = new EmployeModel();
         $model->select('employe.*, role.nom_role, departement.nom_departement')
@@ -65,11 +92,32 @@ class AuthController extends BaseController
             ->orderBy('role.nom_role', 'ASC')
             ->orderBy('employe.nom', 'ASC');
 
-        if ($id !== null) {
-            $model->where('employe.id', $id);
-        }
-
         return $model->findAll();
+    }
+
+    private function demoProfiles(array $employees): array
+    {
+        $employeeRoles = array_map(
+            fn (object $employee): string => $this->roleKey((string) $employee->nom_role),
+            $employees
+        );
+
+        $profiles = [
+            'manager' => ['label' => 'Manager', 'name' => 'Miora Rakoto', 'employee_role' => 'manager'],
+            'responsable' => ['label' => 'Responsable hiérarchique', 'name' => 'Alain R.', 'employee_role' => 'manager'],
+            'rh' => ['label' => 'Ressources humaines', 'name' => 'Sofia R.', 'employee_role' => 'rh'],
+            'finance' => ['label' => 'Finance', 'name' => 'Hanta M.', 'employee_role' => 'finance'],
+            'direction' => ['label' => 'Direction', 'name' => 'Rina T.', 'employee_role' => 'direction'],
+            'admin' => ['label' => 'Administrateur', 'name' => 'Admin Démo', 'employee_role' => 'admin'],
+        ];
+
+        foreach ($profiles as &$profile) {
+            $profile['available'] = in_array($profile['employee_role'], $employeeRoles, true);
+            unset($profile['employee_role']);
+        }
+        unset($profile);
+
+        return $profiles;
     }
 
     private function roleKey(string $role): string

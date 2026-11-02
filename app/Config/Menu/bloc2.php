@@ -2,7 +2,7 @@
 
 /** Menu du recrutement, accessible à tous les utilisateurs connectés. */
 return [
-    'title' => 'Bloc 2 · Recrutement',
+    'title' => 'Recrutement',
     'items' => [
         ['label' => 'Suivi du recrutement', 'url' => 'bloc2/dashboard', 'icon' => '◧'],
         ['label' => 'Offres d’emploi', 'url' => 'bloc2/offers', 'icon' => '▤'],

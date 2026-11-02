@@ -196,8 +196,8 @@ class ContratService
 
         $next = match ($action) {
             'signer' => $contract['statut'] === 'brouillon' ? 'signe' : null,
-            'demarrer' => $contract['statut'] === 'signe' && $contract['date_debut'] <= $today ? 'en_cours' : null,
-            'terminer' => $contract['statut'] === 'en_cours' && $contract['date_fin'] !== null && $contract['date_fin'] <= $today ? 'termine' : null,
+            'demarrer' => $contract['statut'] === 'signe' ? 'en_cours' : null,
+            'terminer' => $contract['statut'] === 'en_cours' && $contract['date_fin'] !== null ? 'termine' : null,
             'annuler' => in_array($contract['statut'], ['brouillon', 'signe'], true) ? 'annule' : null,
             default => null,
         };
