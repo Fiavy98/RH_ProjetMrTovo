@@ -26,6 +26,8 @@ class DocumentModel extends SirhModel
         'chemin_fichier',
         'type_mime',
         'taille_octets',
+        'date_emission',
+        'date_expiration',
         'cree_par',
     ];
 
@@ -37,6 +39,8 @@ class DocumentModel extends SirhModel
         'chemin_fichier'  => 'required|max_length[500]',
         'type_mime'       => 'permit_empty|max_length[100]',
         'taille_octets'   => 'permit_empty|is_natural',
+        'date_emission'   => 'permit_empty|valid_date[Y-m-d]',
+        'date_expiration' => 'permit_empty|valid_date[Y-m-d]',
         'cree_par'        => 'permit_empty|is_natural_no_zero',
     ];
 }

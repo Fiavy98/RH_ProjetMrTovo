@@ -20,6 +20,8 @@ class Document extends SirhEntity
         'employe_id'     => 'integer',
         'contrat_id'     => '?integer',
         'taille_octets'  => '?integer',
+        'date_emission'  => 'date',
+        'date_expiration'=> 'date',
         'cree_le'        => 'datetime',
         'cree_par'       => '?integer',
     ];

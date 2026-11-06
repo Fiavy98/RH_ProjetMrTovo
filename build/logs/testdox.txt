@@ -1,0 +1,10 @@
+Carriere Service
+ [x] Career data can be fetched and filtered by period
+
+Documents Service
+ [x] Document state is computed dynamically
+ [x] Search employees returns only active employees matching the query
+
+Dossier Service
+ [x] Employee detail uses real employee data
+

@@ -11,11 +11,13 @@ namespace App\Entities;
 class Employe extends SirhEntity
 {
     protected $casts = [
-        'id'              => 'integer',
-        'departement_id'  => 'integer',
-        'role_id'         => '?integer',
-        'candidat_id'     => 'integer',
-        'date_embauche'   => 'datetime',
-        'actif'           => 'pgbool',
+        'id'                     => 'integer',
+        'departement_id'         => 'integer',
+        'role_id'                => '?integer',
+        'candidat_id'            => 'integer',
+        'date_embauche'          => 'date',
+        'date_naissance'         => 'date',
+        'date_delivrance_cni'    => 'date',
+        'actif'                  => 'pgbool',
     ];
 }

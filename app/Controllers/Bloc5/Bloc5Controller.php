@@ -30,7 +30,16 @@ class Bloc5Controller extends BaseController
         $screen = $this->pages->screen($slug);
         if ($screen === null) throw PageNotFoundException::forPageNotFound();
 
-        return view('shared/module_scaffold', [
+        $view = match ($slug) {
+            'dossiers' => 'bloc5/dossiers',
+            'dossier' => 'bloc5/dossier',
+            'documents' => 'bloc5/documents',
+            'carriere' => 'bloc5/carriere',
+            'audit' => 'bloc5/audit',
+            default => 'shared/module_scaffold',
+        };
+
+        return view($view, [
             'pageTitle' => $screen['title'],
             'blockTitle' => 'Bloc 5 · Dossier administratif du salarié',
             'screen' => $screen,
