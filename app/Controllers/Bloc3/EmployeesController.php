@@ -4,13 +4,21 @@ namespace App\Controllers\Bloc3;
 
 use App\Controllers\BaseController;
 use App\Models\EmployeModel;
+use App\Services\Bloc3\EmployeesService;
 
 class EmployeesController extends BaseController
 {
+    private EmployeesService $employeesService;
+
+    public function __construct()
+    {
+        $this->employeesService = new EmployeesService();
+    }
+
     public function index()
     {
-        $db = db_connect();
         $employeeModel = new EmployeModel();
+        $db = db_connect();
 
         $rows = $employeeModel
             ->select([
@@ -46,115 +54,50 @@ class EmployeesController extends BaseController
             ];
         }, $rows);
 
-        $acceptedCandidates = $db->table('proposition_embauche pe')
-            ->select(['c.id AS candidate_id', 'c.nom', 'c.prenom', 'c.email'])
-            ->join('candidature ca', 'ca.id = pe.candidature_id', 'left')
-            ->join('candidat c', 'c.id = ca.candidat_id', 'left')
-            ->where('pe.reponse', 'ACCEPTEE')
-            ->whereIn('pe.decision_direction', ['VALIDEE', 'ACCEPTE', 'ACCEPTEE'])
-            ->orderBy('c.nom', 'ASC')
-            ->get()
-            ->getResultArray();
-
-        $alreadyUsedCandidateIds = array_map(
-            static fn (array $row): int => (int) ($row['candidat_id'] ?? 0),
-            $db->table('employe')->select('candidat_id')->get()->getResultArray()
-        );
-
-        $candidateOptions = ['' => 'Choisir un candidat'];
+        $eligibleCandidates = $this->employeesService->eligibleCandidates();
         $candidateDetails = [];
-
-        foreach ($acceptedCandidates as $candidate) {
-            $candidateId = (int) ($candidate['candidate_id'] ?? 0);
-            if ($candidateId <= 0 || in_array($candidateId, $alreadyUsedCandidateIds, true)) {
-                continue;
-            }
-
-            $candidateName = trim((string) ($candidate['nom'] ?? '') . ' ' . (string) ($candidate['prenom'] ?? ''));
-            if ($candidateName === '') {
-                continue;
-            }
-
-            $candidateOptions[(string) $candidateId] = $candidateName;
-            $candidateDetails[(string) $candidateId] = [
-                'nom' => (string) ($candidate['nom'] ?? ''),
-                'prenom' => (string) ($candidate['prenom'] ?? ''),
-                'email' => (string) ($candidate['email'] ?? ''),
+        foreach ($eligibleCandidates as $candidate) {
+            $candidateDetails[(string) ($candidate['candidate_id'] ?? 0)] = [
+                'nom' => $candidate['nom'],
+                'prenom' => $candidate['prenom'],
+                'email' => $candidate['email'],
+                'telephone' => $candidate['telephone'] ?? '',
             ];
-        }
-
-        $departmentRows = $db->table('departement')
-            ->select(['id', 'nom_departement'])
-            ->orderBy('id', 'ASC')
-            ->get()
-            ->getResultArray();
-
-        $departmentOptions = ['' => 'Choisir un département'];
-        foreach ($departmentRows as $department) {
-            $departmentId = (int) ($department['id'] ?? 0);
-            if ($departmentId > 0) {
-                $departmentOptions[(string) $departmentId] = (string) ($department['nom_departement'] ?? 'Département');
-            }
         }
 
         return view('bloc3/employees', [
             'employees' => $employees,
-            'candidateOptions' => $candidateOptions,
+            'eligibleCandidates' => $eligibleCandidates,
+            'candidateOptions' => $this->employeesService->candidateOptions(),
             'candidateDetails' => $candidateDetails,
-            'departmentOptions' => $departmentOptions,
+            'departmentOptions' => $this->employeesService->departmentOptions(),
         ]);
     }
 
     public function save()
     {
-        $db = db_connect();
         $candidateId = (int) ($this->request->getPost('candidate') ?? 0);
-        $jobCandidate = $db->table('candidat')->where('id', $candidateId)->get()->getRowArray();
+        $photoFile = $this->request->getFile('photo');
 
-        if ($candidateId <= 0 || empty($jobCandidate)) {
-            return redirect()->back()->withInput()->with('error', 'Veuillez choisir un candidat validé par la direction.');
+        $result = $this->employeesService->createEmployeeFromCandidate($candidateId, [
+            'nom' => trim((string) ($this->request->getPost('nom') ?? '')),
+            'prenom' => trim((string) ($this->request->getPost('prenom') ?? '')),
+            'email' => trim((string) ($this->request->getPost('email') ?? '')),
+            'date_naissance' => trim((string) ($this->request->getPost('date_naissance') ?? '')),
+            'numero_cni' => trim((string) ($this->request->getPost('numero_cni') ?? '')),
+            'date_delivrance_cni' => trim((string) ($this->request->getPost('date_delivrance_cni') ?? '')),
+            'lieu_delivrance_cni' => trim((string) ($this->request->getPost('lieu_delivrance_cni') ?? '')),
+            'telephone' => trim((string) ($this->request->getPost('telephone') ?? '')),
+            'adresse' => trim((string) ($this->request->getPost('adresse') ?? '')),
+            'situation_familiale' => trim((string) ($this->request->getPost('situation_familiale') ?? '')),
+            'date_embauche' => trim((string) ($this->request->getPost('date_embauche') ?? '')),
+            'departement_id' => (int) ($this->request->getPost('departement_id') ?? 0),
+        ], $photoFile);
+
+        if ($result['ok'] !== true) {
+            return redirect()->back()->withInput()->with('error', $result['message']);
         }
 
-        $existingEmployee = $db->table('employe')->where('candidat_id', $candidateId)->get()->getRowArray();
-        if (! empty($existingEmployee)) {
-            return redirect()->back()->withInput()->with('error', 'Ce candidat est déjà enregistré comme salarié.');
-        }
-
-        $nom = trim((string) ($this->request->getPost('nom') ?? $jobCandidate['nom'] ?? ''));
-        $prenom = trim((string) ($this->request->getPost('prenom') ?? $jobCandidate['prenom'] ?? ''));
-        $email = trim((string) ($this->request->getPost('email') ?? $jobCandidate['email'] ?? ''));
-        $dateEmbauche = (string) ($this->request->getPost('date_embauche') ?? date('Y-m-d'));
-        $departementId = (int) ($this->request->getPost('departement_id') ?? 0);
-
-        if ($nom === '' || $prenom === '' || $email === '' || $departementId <= 0 || $dateEmbauche === '') {
-            return redirect()->back()->withInput()->with('error', 'Tous les champs du dossier salarié sont obligatoires.');
-        }
-
-        $lastEmployee = $db->table('employe')->select('matricule')->orderBy('id', 'DESC')->limit(1)->get()->getRowArray();
-        $nextNumber = 1;
-
-        if (! empty($lastEmployee['matricule'])) {
-            preg_match('/^(EMP-)(\d+)$/', (string) $lastEmployee['matricule'], $matches);
-            if (! empty($matches[2])) {
-                $nextNumber = (int) $matches[2] + 1;
-            }
-        }
-
-        $matricule = 'EMP-' . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
-
-        $employeeModel = new EmployeModel();
-        $employeeModel->insert([
-            'matricule' => $matricule,
-            'nom' => $nom,
-            'prenom' => $prenom,
-            'email' => $email,
-            'departement_id' => $departementId,
-            'role_id' => null,
-            'candidat_id' => $candidateId,
-            'date_embauche' => $dateEmbauche,
-            'actif' => true,
-        ]);
-
-        return redirect()->to('bloc3/employees')->with('success', 'Le dossier salarié a bien été créé.');
+        return redirect()->to('bloc3/employees')->with('success', $result['message']);
     }
 }

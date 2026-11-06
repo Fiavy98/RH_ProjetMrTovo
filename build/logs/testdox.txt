@@ -8,3 +8,14 @@ Documents Service
 Dossier Service
  [x] Employee detail uses real employee data
 
+Example Database
+ [x] Model find all
+ [x] Soft delete leaves row
+
+Example Session
+ [x] Session simple
+
+Health
+ [x] Is defined app path
+ [x] Base url has been set
+

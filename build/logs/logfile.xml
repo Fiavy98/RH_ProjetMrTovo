@@ -1,15 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="CLI Arguments" tests="4" assertions="19" errors="0" failures="0" skipped="0" time="0.061110">
-    <testsuite name="CarriereServiceTest" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/CarriereServiceTest.php" tests="1" assertions="5" errors="0" failures="0" skipped="0" time="0.033045">
-      <testcase name="testCareerDataCanBeFetchedAndFilteredByPeriod" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/CarriereServiceTest.php" line="8" class="CarriereServiceTest" classname="CarriereServiceTest" assertions="5" time="0.033045"/>
-    </testsuite>
-    <testsuite name="DocumentsServiceTest" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/DocumentsServiceTest.php" tests="2" assertions="7" errors="0" failures="0" skipped="0" time="0.009676">
-      <testcase name="testDocumentStateIsComputedDynamically" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/DocumentsServiceTest.php" line="8" class="DocumentsServiceTest" classname="DocumentsServiceTest" assertions="4" time="0.005426"/>
-      <testcase name="testSearchEmployeesReturnsOnlyActiveEmployeesMatchingTheQuery" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/DocumentsServiceTest.php" line="18" class="DocumentsServiceTest" classname="DocumentsServiceTest" assertions="3" time="0.004249"/>
-    </testsuite>
-    <testsuite name="DossierServiceTest" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/DossierServiceTest.php" tests="1" assertions="7" errors="0" failures="0" skipped="0" time="0.018389">
-      <testcase name="testEmployeeDetailUsesRealEmployeeData" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/DossierServiceTest.php" line="9" class="DossierServiceTest" classname="DossierServiceTest" assertions="7" time="0.018389"/>
+  <testsuite name="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/phpunit.xml.dist" tests="9" assertions="26" errors="0" failures="0" skipped="0" time="0.089786">
+    <testsuite name="App" tests="9" assertions="26" errors="0" failures="0" skipped="0" time="0.089786">
+      <testsuite name="ExampleDatabaseTest" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/database/ExampleDatabaseTest.php" tests="2" assertions="3" errors="0" failures="0" skipped="0" time="0.052000">
+        <testcase name="testModelFindAll" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/database/ExampleDatabaseTest.php" line="17" class="ExampleDatabaseTest" classname="ExampleDatabaseTest" assertions="1" time="0.046048"/>
+        <testcase name="testSoftDeleteLeavesRow" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/database/ExampleDatabaseTest.php" line="28" class="ExampleDatabaseTest" classname="ExampleDatabaseTest" assertions="2" time="0.005952"/>
+      </testsuite>
+      <testsuite name="ExampleSessionTest" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/session/ExampleSessionTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.001294">
+        <testcase name="testSessionSimple" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/session/ExampleSessionTest.php" line="10" class="ExampleSessionTest" classname="ExampleSessionTest" assertions="1" time="0.001294"/>
+      </testsuite>
+      <testsuite name="CarriereServiceTest" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/CarriereServiceTest.php" tests="1" assertions="5" errors="0" failures="0" skipped="0" time="0.006658">
+        <testcase name="testCareerDataCanBeFetchedAndFilteredByPeriod" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/CarriereServiceTest.php" line="8" class="CarriereServiceTest" classname="CarriereServiceTest" assertions="5" time="0.006658"/>
+      </testsuite>
+      <testsuite name="DocumentsServiceTest" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/DocumentsServiceTest.php" tests="2" assertions="7" errors="0" failures="0" skipped="0" time="0.007397">
+        <testcase name="testDocumentStateIsComputedDynamically" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/DocumentsServiceTest.php" line="8" class="DocumentsServiceTest" classname="DocumentsServiceTest" assertions="4" time="0.004117"/>
+        <testcase name="testSearchEmployeesReturnsOnlyActiveEmployeesMatchingTheQuery" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/DocumentsServiceTest.php" line="18" class="DocumentsServiceTest" classname="DocumentsServiceTest" assertions="3" time="0.003280"/>
+      </testsuite>
+      <testsuite name="DossierServiceTest" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/DossierServiceTest.php" tests="1" assertions="7" errors="0" failures="0" skipped="0" time="0.012130">
+        <testcase name="testEmployeeDetailUsesRealEmployeeData" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/Bloc5/DossierServiceTest.php" line="9" class="DossierServiceTest" classname="DossierServiceTest" assertions="7" time="0.012130"/>
+      </testsuite>
+      <testsuite name="HealthTest" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/HealthTest.php" tests="2" assertions="3" errors="0" failures="0" skipped="0" time="0.010307">
+        <testcase name="testIsDefinedAppPath" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/HealthTest.php" line="12" class="HealthTest" classname="HealthTest" assertions="1" time="0.001014"/>
+        <testcase name="testBaseUrlHasBeenSet" file="/home/kamado/ITU/S5/RH/RH_ProjetMrTovo/tests/unit/HealthTest.php" line="17" class="HealthTest" classname="HealthTest" assertions="2" time="0.009293"/>
+      </testsuite>
     </testsuite>
   </testsuite>
 </testsuites>
