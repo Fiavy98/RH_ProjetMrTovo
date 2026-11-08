@@ -1,14 +1,5 @@
 <?php
 
-/** Routes du squelette statique du Bloc 6 — Temps de travail et pointage. */
-$routes->group('bloc6', ['namespace' => 'App\\Controllers\\Bloc6', 'filter' => ['auth', 'internal']], static function ($routes) {
-/**
- * Routes du Bloc 6 — Temps de travail et pointage.
- * Réservé exclusivement aux 3 écrans demandés :
- * - /bloc6/horaires
- * - /bloc6/planning
- * - /bloc6/pointages
- */
 $routes->group('bloc6', ['namespace' => 'App\\Controllers\\Bloc6', 'filter' => 'auth'], static function ($routes) {
     $routes->get('/', 'Bloc6Controller::index');
 
