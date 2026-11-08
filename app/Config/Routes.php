@@ -18,6 +18,9 @@ if (ENVIRONMENT !== 'production') {
     $routes->get('dev/db', 'Dev::db', ['filter' => 'auth']);
 }
 
+// Les routes explicites de la partie D doivent précéder les routes génériques (:segment).
+require APPPATH . 'Config/Routes/partieD.php';
+
 // Routes de chaque bloc
 foreach ([1, 2, 3, 4, 5, 6, 7] as $n) {
     require APPPATH . "Config/Routes/bloc{$n}.php";

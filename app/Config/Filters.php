@@ -15,6 +15,7 @@ use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\AuthFilter;
 use App\Filters\Bloc1AccessFilter;
 use App\Filters\BlocRoleAccessFilter;
+use App\Filters\PartieDAccessFilter;
 
 class Filters extends BaseFilters
 {
@@ -40,6 +41,7 @@ class Filters extends BaseFilters
         'auth'          => AuthFilter::class,
         'bloc1access'   => Bloc1AccessFilter::class,
         'blocroles'     => BlocRoleAccessFilter::class,
+        'partied'       => PartieDAccessFilter::class,
     ];
 
     /**
