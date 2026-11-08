@@ -4,7 +4,7 @@
 
 Ce document décrit les pages et les rôles autorisés dans l’application. Les règles des Blocs 2, 3 et 4 sont contrôlées côté serveur par un filtre de routes et les menus sont alignés sur ces règles. Le Bloc 1 est conservé tel quel.
 
-Rôles considérés : **Manager**, **RH**, **Finance**, **Direction**, **Administrateur**. Dans le cadrage V1, le candidat et le salarié n’accèdent pas à l’application ; leurs données sont saisies ou gérées par la RH.
+Rôles considérés : **Manager**, **RH**, **Finance**, **Direction**, **Administrateur** et **Salarié** (portail Bloc 7 prévu). Dans le cadrage V1 initial, le candidat et le salarié n’accédaient pas à l’application ; le portail salarié constitue une évolution décidée pour le Bloc 7C.
 
 ## Socle de l’application
 
@@ -76,8 +76,17 @@ La base ne contient pas de lien explicite entre un Manager et les salariés qu�
 - Administrateur est autorisé sur toutes les routes de ces trois blocs.
 - Les menus des Blocs 2, 3 et 4 n’affichent que les pages autorisées au rôle courant. Le menu du Bloc 1 n’a pas été modifié.
 - Finance n’a pas d’accès aux Blocs 2, 3 et 4.
-- La sélection de profil à l’authentification reste un mécanisme de démonstration sans mot de passe ; les permissions décrites ici s’appliquent au rôle de session choisi.
+- La sélection des profils RH, Manager, Finance, Direction et Administrateur reste un mécanisme de démonstration. Le portail Salarié utilise son email et son mot de passe individuels.
 
-## Blocs 5 à 7 — Squelettes en cours de cadrage
+## Bloc 7 — Congés et absences
 
-Les routes des Blocs 5, 6 et 7 ne sont pour l’instant que des maquettes statiques protégées par la session. Elles affichent des exemples fictifs et ne lisent ni n’enregistrent de données métier. Aucun rôle métier n’est encore appliqué à ces blocs. Avant leur raccordement aux données réelles, il faudra définir les habilitations, notamment pour les salaires et dossiers administratifs du Bloc 5, les pointages du Bloc 6 et les soldes/justificatifs du Bloc 7.
+| Page / fonctionnalité | Rôle prévu | Portée |
+|---|---|---|
+| Portail salarié : demandes et soldes | Salarié (cumulable avec Manager ou RH) | Uniquement ses demandes, justificatifs, notifications et soldes |
+| File de validation manager | Manager | Demandes qui lui sont routées comme manager direct |
+| File de validation RH | RH | Demandes routées aux RH en l'absence de manager et supervision selon habilitation |
+| Gestion des comptes salariés (`/bloc7/comptes-salaries`) | RH et Administrateur | Activer ou réinitialiser le mot de passe du compte lié au dossier employé |
+| Gestion du calendrier et supervision des soldes | RH ; Administrateur pour administration technique | Accès de gestion, avec journalisation des modifications |
+| Suivi opérationnel des absences | RH et rôles Bloc 7 autorisés | Selon le périmètre de la partie D |
+
+Le socle SQL ajoute le rôle Salarié et une relation `employe_role` afin qu'un même compte puisse cumuler des rôles. Le compte salarié est lié à `employe.id`, avec un mot de passe haché dans `employe.mot_de_passe`; la RH peut l'activer ou le réinitialiser depuis `/bloc7/comptes-salaries`. Les routes Bloc 7 sont filtrées côté serveur, avec contrôle du périmètre par salarié et manager. Les autres profils conservent leur connexion de démonstration.

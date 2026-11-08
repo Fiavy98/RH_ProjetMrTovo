@@ -16,6 +16,8 @@ use App\Filters\AuthFilter;
 use App\Filters\Bloc1AccessFilter;
 use App\Filters\BlocRoleAccessFilter;
 use App\Filters\PartieDAccessFilter;
+use App\Filters\Bloc7AccessFilter;
+use App\Filters\InternalStaffFilter;
 
 class Filters extends BaseFilters
 {
@@ -42,6 +44,8 @@ class Filters extends BaseFilters
         'bloc1access'   => Bloc1AccessFilter::class,
         'blocroles'     => BlocRoleAccessFilter::class,
         'partied'       => PartieDAccessFilter::class,
+        'bloc7access'   => Bloc7AccessFilter::class,
+        'internal'      => InternalStaffFilter::class,
     ];
 
     /**

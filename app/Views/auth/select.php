@@ -20,7 +20,7 @@
         </div>
         <div class="login-badges">
             <span class="demo-tag">04 blocs connectés</span>
-            <span class="demo-tag">06 profils métier</span>
+            <span class="demo-tag">07 profils métier</span>
             <span class="demo-tag">Frontend + Backend</span>
         </div>
     </section>
@@ -29,7 +29,7 @@
         <div class="login-card">
             <div class="eyebrow">Bienvenue sur NovaRH</div>
             <h2>Connexion de démonstration</h2>
-            <p class="muted" style="margin-top:9px">Aucun compte réel n'est utilisé. Choisissez un rôle pour tester les écrans.</p>
+            <p class="muted" style="margin-top:9px">Les profils de gestion sont simulés. Le profil Salarié peut se connecter avec le compte lié à son dossier.</p>
 
             <?php if ($error): ?>
                 <?= ui_notice($error, 'danger') ?>
@@ -53,23 +53,23 @@
                 </div>
 
                 <div class="field">
-                    <label for="login-user">Identifiant de démonstration *</label>
-                    <input id="login-user" name="login" value="demo" required autocomplete="off">
+                    <label for="login-user">Identifiant *</label>
+                    <input id="login-user" name="login" value="demo" required autocomplete="username">
                 </div>
 
                 <div class="field">
-                    <label for="login-pass">Mot de passe de démonstration *</label>
+                    <label for="login-pass">Mot de passe *</label>
                     <div class="field-inline">
-                        <input id="login-pass" type="password" name="password" value="demo" required autocomplete="off">
+                        <input id="login-pass" type="password" name="password" value="demo" required autocomplete="current-password">
                         <button class="icon-btn" type="button" data-toggle-password aria-label="Afficher le mot de passe">◉</button>
                     </div>
                 </div>
 
-                <button class="btn btn-primary" type="submit" <?= $hasProfiles ? '' : 'disabled' ?>>Accéder à l'espace RH →</button>
+                <button class="btn btn-primary" type="submit" <?= $hasProfiles ? '' : 'disabled' ?>>Accéder à l’espace choisi →</button>
             </form>
 
-            <div class="notice" style="margin-top:22px">Simulation visuelle uniquement. Les rôles ne constituent pas une sécurité serveur. Vos changements restent locaux à ce navigateur.</div>
-            <p class="small muted">Utiliser <b>demo / demo</b> uniquement pour ce prototype.</p>
+            <div class="notice" style="margin-top:22px">La connexion demo / demo sert à choisir un profil de démonstration. Les permissions des routes sont contrôlées côté serveur.</div>
+            <p class="small muted">La connexion <b>demo / demo</b> est réservée aux profils de démonstration. Un salarié peut aussi utiliser son adresse email et son mot de passe lié à son dossier.</p>
         </div>
     </section>
 </div>

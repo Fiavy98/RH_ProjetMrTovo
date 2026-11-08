@@ -15,8 +15,12 @@ use App\Models\PosteModel;
  */
 class Home extends BaseController
 {
-    public function index(): string
+    public function index()
     {
+        if (session()->get('role') === 'salarie') {
+            return redirect()->to(site_url('bloc7/demandes'));
+        }
+
         $stats   = [];
         $dbError = null;
 

@@ -36,18 +36,35 @@ class AuthController extends BaseController
             'finance' => 'finance',
             'direction' => 'direction',
             'admin' => 'admin',
+            'salarie' => 'salarie',
         ];
-
-        if (! hash_equals('demo', $login) || ! hash_equals('demo', $password)) {
-            session()->setFlashdata('error', 'Identifiant ou mot de passe de démonstration invalide. Utilisez demo / demo.');
-            return redirect()->to(site_url('auth'));
-        }
 
         $requiredRole = $profileRoles[$profile] ?? null;
         $employee = null;
+        if ($requiredRole === 'salarie' && ! (hash_equals('demo', $login) && hash_equals('demo', $password))) {
+            $account = db_connect()->table('employe e')->select('e.*, departement.nom_departement')
+                ->join('employe_role er', 'er.employe_id=e.id')->join('role r', 'r.id=er.role_id')
+                ->join('departement', 'departement.id=e.departement_id')
+                ->where('e.actif', true)->where('r.nom_role', 'Salarie')->where('e.email', $login)
+                ->get()->getRowArray();
+            if ($account && ! empty($account['mot_de_passe']) && password_verify($password, $account['mot_de_passe'])) {
+                $employee = (object) $account;
+            }
+        }
+        if ($employee === null && (! hash_equals('demo', $login) || ! hash_equals('demo', $password))) {
+            session()->setFlashdata('error', $requiredRole === 'salarie'
+                ? 'Compte salarié introuvable ou mot de passe invalide. Les comptes de démonstration utilisent demo / demo.'
+                : 'Identifiant ou mot de passe de démonstration invalide. Utilisez demo / demo.');
+            return redirect()->to(site_url('auth'));
+        }
         if ($requiredRole !== null) {
-            foreach ($this->availableEmployees() as $candidate) {
-                if ($this->roleKey((string) $candidate->nom_role) === $requiredRole) {
+            $candidates = $this->availableEmployees();
+            if ($requiredRole === 'salarie') {
+                usort($candidates, static fn($a, $b) => ((int)($a->role_id !== null)) <=> ((int)($b->role_id !== null)));
+            }
+            foreach ($candidates as $candidate) {
+                if ($employee !== null) break;
+                if ($requiredRole === 'salarie' || $this->roleKey((string) $candidate->nom_role) === $requiredRole) {
                     $employee = $candidate;
                     break;
                 }
@@ -62,11 +79,11 @@ class AuthController extends BaseController
         session()->regenerate(true);
         session()->set([
             'auth_employee_id' => (int) $employee->id,
-            'role'             => $this->roleKey((string) $employee->nom_role),
+            'role'             => $requiredRole,
             'auth_user'        => [
                 'id'         => (int) $employee->id,
                 'name'       => trim($employee->prenom . ' ' . $employee->nom),
-                'label'      => (string) $employee->nom_role,
+                'label'      => $requiredRole === 'salarie' ? 'Salarié' : (string) $employee->nom_role,
                 'department' => (string) $employee->nom_departement,
                 'initials'    => strtoupper(mb_substr($employee->prenom, 0, 1) . mb_substr($employee->nom, 0, 1)),
             ],
@@ -85,10 +102,9 @@ class AuthController extends BaseController
     {
         $model = new EmployeModel();
         $model->select('employe.*, role.nom_role, departement.nom_departement')
-            ->join('role', 'role.id = employe.role_id')
+            ->join('role', 'role.id = employe.role_id', 'left')
             ->join('departement', 'departement.id = employe.departement_id')
             ->where('employe.actif', true)
-            ->where('employe.role_id IS NOT NULL', null, false)
             ->orderBy('role.nom_role', 'ASC')
             ->orderBy('employe.nom', 'ASC');
 
@@ -109,10 +125,11 @@ class AuthController extends BaseController
             'finance' => ['label' => 'Finance', 'name' => 'Hanta M.', 'employee_role' => 'finance'],
             'direction' => ['label' => 'Direction', 'name' => 'Rina T.', 'employee_role' => 'direction'],
             'admin' => ['label' => 'Administrateur', 'name' => 'Admin Démo', 'employee_role' => 'admin'],
+            'salarie' => ['label' => 'Salarié', 'name' => 'Salarié Démo', 'employee_role' => 'salarie'],
         ];
 
         foreach ($profiles as &$profile) {
-            $profile['available'] = in_array($profile['employee_role'], $employeeRoles, true);
+            $profile['available'] = $profile['employee_role'] === 'salarie' ? $employees !== [] : in_array($profile['employee_role'], $employeeRoles, true);
             unset($profile['employee_role']);
         }
         unset($profile);
@@ -129,7 +146,8 @@ class AuthController extends BaseController
             str_contains($role, 'direction') => 'direction',
             str_contains($role, 'finance') => 'finance',
             str_contains($role, 'rh') || str_contains($role, 'ressources') => 'rh',
-            default => 'manager',
+            str_contains($role, 'manager') || str_contains($role, 'responsable') => 'manager',
+            default => '',
         };
     }
 }
