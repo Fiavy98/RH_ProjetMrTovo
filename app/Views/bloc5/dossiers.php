@@ -26,7 +26,6 @@ endforeach;
         <h1>Répertoire des salariés</h1>
         <p>Consultation du personnel déjà enregistré dans le système.</p>
     </div>
-    <button class="btn btn-white" type="button" <?= $pdfAvailable ? '' : 'disabled title="Aucune bibliothèque PDF n\'est pas installée dans ce projet."' ?>>Exporter en PDF</button>
 </div>
 
 <form class="toolbar" method="get" action="<?= site_url('bloc5/dossiers') ?>">
