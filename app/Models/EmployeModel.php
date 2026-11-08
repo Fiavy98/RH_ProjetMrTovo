@@ -37,6 +37,14 @@ class EmployeModel extends SirhModel
         'candidat_id',
         'date_embauche',
         'actif',
+        'date_naissance',
+        'telephone',
+        'adresse',
+        'situation_familiale',
+        'numero_cni',
+        'date_delivrance_cni',
+        'lieu_delivrance_cni',
+        'photo',
     ];
 
     protected $validationRules = [
