@@ -49,6 +49,8 @@ if (! function_exists('ui_menu')) {
     function ui_menu(): array
     {
         $role   = ui_role();
+        $extensionsFile = APPPATH . 'Config/Menu/partieD.php';
+        $extensions = is_file($extensionsFile) ? require $extensionsFile : [];
         $groups = [
             ['title' => 'Vue générale', 'items' => [['label' => 'Accueil', 'url' => '', 'icon' => '◧']]],
         ];
@@ -60,6 +62,13 @@ if (! function_exists('ui_menu')) {
                 $group = require $file;
 
                 if (is_array($group)) {
+                    $existingUrls = array_column($group['items'] ?? [], 'url');
+                    foreach ($extensions[$n] ?? [] as $item) {
+                        if (! in_array($item['url'], $existingUrls, true)) {
+                            $group['items'][] = $item;
+                            $existingUrls[] = $item['url'];
+                        }
+                    }
                     $groups[] = $group;
                 }
             }

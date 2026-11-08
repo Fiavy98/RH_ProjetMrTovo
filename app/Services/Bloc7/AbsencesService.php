@@ -16,7 +16,7 @@ class AbsencesService
     public function __construct(?BaseConnection $db = null)
     {
         $this->db = $db ?? db_connect();
-        $this->model = model(AbsenceModel::class);
+        $this->model = new AbsenceModel($this->db);
     }
 
     public function listing(array $filters): array
@@ -66,13 +66,16 @@ class AbsencesService
         if ($typeId > 0 && ! $type) throw new InvalidArgumentException('Type de congé introuvable.');
         $current = $id ? $this->model->find($id) : null;
         if ($id && ! $current) throw new InvalidArgumentException('Absence introuvable.');
-        $fileData = $this->storeFile($file);
-        if (WorkBoolean::isTrue($type['justificatif_obligatoire'] ?? false) && ! $fileData && empty($current['justificatif_nom_stocke'])) {
+        $hasUpload = $file !== null && $file->getError() !== UPLOAD_ERR_NO_FILE;
+        if (WorkBoolean::isTrue($type['justificatif_obligatoire'] ?? false) && ! $hasUpload && empty($current['justificatif_nom_stocke'])) {
             throw new InvalidArgumentException('Un justificatif est obligatoire pour ce type.');
         }
 
         $demandId = (int) ($data['demande_conge_id'] ?? 0);
         if ($demandId > 0) $this->assertApprovedDemand($demandId, $employeeId, $from, $to);
+        $fileData = $this->storeFile($file);
+        $storedPath = $fileData['_stored_path'] ?? null;
+        unset($fileData['_stored_path']);
         $payload = [
             'employe_id' => $employeeId, 'type_conge_id' => $typeId ?: null, 'demande_conge_id' => $demandId ?: null,
             'date_debut' => $from, 'date_fin' => $to, 'motif' => $reason,
@@ -81,19 +84,33 @@ class AbsencesService
             'modifie_le' => date('Y-m-d H:i:s'), 'modifie_par' => $authorId,
         ] + $fileData;
 
-        $this->db->transStart();
-        if ($id) {
-            $this->model->update($id, $payload);
-            $savedId = $id;
-            $action = 'MODIFICATION';
-        } else {
-            $payload['cree_par'] = $authorId;
-            $savedId = (int) $this->model->insert($payload, true);
-            $action = 'CREATION';
+        try {
+            $this->db->transException(true)->transStart();
+            if ($id) {
+                $this->model->update($id, $payload);
+                $savedId = $id;
+                $action = 'MODIFICATION';
+            } else {
+                $payload['cree_par'] = $authorId;
+                $savedId = (int) $this->model->insert($payload, true);
+                $action = 'CREATION';
+            }
+            $this->db->table('absence_historique')->insert(['absence_id' => $savedId, 'action' => $action, 'detail' => 'Statut : ' . $status, 'auteur_id' => $authorId]);
+            $this->db->transComplete();
+            if (! $this->db->transStatus()) throw new \RuntimeException('L’absence n’a pas pu être enregistrée.');
+        } catch (\Throwable $e) {
+            if (is_string($storedPath) && is_file($storedPath)) {
+                unlink($storedPath);
+            }
+            throw $e;
         }
-        $this->db->table('absence_historique')->insert(['absence_id' => $savedId, 'action' => $action, 'detail' => 'Statut : ' . $status, 'auteur_id' => $authorId]);
-        $this->db->transComplete();
-        if (! $this->db->transStatus()) throw new \RuntimeException('L’absence n’a pas pu être enregistrée.');
+
+        if ($id && is_string($storedPath) && ! empty($current['justificatif_nom_stocke'])) {
+            $oldPath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'absences' . DIRECTORY_SEPARATOR . basename((string) $current['justificatif_nom_stocke']);
+            if (is_file($oldPath)) {
+                unlink($oldPath);
+            }
+        }
         return $savedId;
     }
 
@@ -106,7 +123,7 @@ class AbsencesService
         ];
     }
 
-    private function storeFile(?UploadedFile $file): array
+    protected function storeFile(?UploadedFile $file): array
     {
         if ($file === null || $file->getError() === UPLOAD_ERR_NO_FILE) return [];
         if (! $file->isValid() || $file->hasMoved()) throw new InvalidArgumentException('Le justificatif reçu est invalide.');
@@ -122,7 +139,7 @@ class AbsencesService
         $size = $file->getSize();
         $original = basename($file->getClientName());
         $file->move($directory, $stored);
-        return ['justificatif_nom_original' => $original, 'justificatif_nom_stocke' => $stored, 'justificatif_mime' => $mime, 'justificatif_taille' => $size];
+        return ['justificatif_nom_original' => $original, 'justificatif_nom_stocke' => $stored, 'justificatif_mime' => $mime, 'justificatif_taille' => $size, '_stored_path' => $directory . DIRECTORY_SEPARATOR . $stored];
     }
 
     private function assertApprovedDemand(int $id, int $employeeId, string $from, string $to): void

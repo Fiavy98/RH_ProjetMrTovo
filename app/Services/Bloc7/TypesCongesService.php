@@ -14,7 +14,7 @@ class TypesCongesService
     public function __construct(?BaseConnection $db = null)
     {
         $this->db = $db ?? db_connect();
-        $this->model = model(TypeCongeModel::class);
+        $this->model = new TypeCongeModel($this->db);
     }
 
     public function listing(string $search = ''): array

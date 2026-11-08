@@ -16,7 +16,7 @@ class AnomaliesService
     public function __construct(?BaseConnection $db = null)
     {
         $this->db = $db ?? db_connect();
-        $this->model = model(AnomalieDModel::class);
+        $this->model = new AnomalieDModel($this->db);
     }
 
     public function detect(string $from, string $to, ?DateTimeImmutable $now = null): int
