@@ -18,6 +18,7 @@ if (! function_exists('ui_roles')) {
             'finance'   => ['label' => 'Finance'],
             'direction' => ['label' => 'Direction'],
             'admin'     => ['label' => 'Super administrateur'],
+            'salarie'   => ['label' => 'Salarié'],
         ];
     }
 }
@@ -74,13 +75,16 @@ if (! function_exists('ui_menu')) {
             }
         }
 
-        if (ENVIRONMENT !== 'production') {
+        if (ENVIRONMENT !== 'production' && $role !== 'salarie') {
             $groups[] = ['title' => 'Développement', 'items' => [['label' => 'Contrôle de la base', 'url' => 'dev/db', 'icon' => '⚙']]];
         }
 
         $result = [];
 
         foreach ($groups as $group) {
+            if ($role === 'salarie' && ! in_array($group['title'] ?? '', ['Vue générale', 'Congés et absences'], true)) {
+                continue;
+            }
             $items = array_values(array_filter(
                 $group['items'] ?? [],
                 static fn (array $item): bool => empty($item['roles']) || in_array($role, $item['roles'], true)
@@ -104,6 +108,7 @@ if (! function_exists('ui_status_label')) {
             'brouillon' => 'Brouillon', 'signe' => 'Signé', 'en_cours' => 'En cours', 'termine' => 'Terminé',
             'annule' => 'Annulé', 'a_faire' => 'À faire', 'en_attente' => 'En attente', 'acceptee' => 'Acceptée',
             'refusee' => 'Refusée', 'publiee' => 'Publiée', 'cloturee' => 'Clôturée', 'preselectionnee' => 'Présélectionnée',
+            'a_corriger' => 'À corriger', 'retiree' => 'Retirée', 'annulee' => 'Annulée', 'en_attente_manager' => 'En attente du manager', 'en_attente_rh' => 'En attente des RH',
             'retenue' => 'Retenue', 'planifie' => 'Planifié', 'realise' => 'Réalisé', 'validee' => 'Validée',
             'oui' => 'Oui', 'non' => 'Non',
         ];

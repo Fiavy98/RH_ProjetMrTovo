@@ -1,7 +1,7 @@
 <?php
 
 /** Routes du Bloc 5 — Dossier administratif. */
-$routes->group('bloc5', ['namespace' => 'App\\Controllers\\Bloc5', 'filter' => 'auth'], static function ($routes) {
+$routes->group('bloc5', ['namespace' => 'App\\Controllers\\Bloc5', 'filter' =>  ['auth', 'internal']], static function ($routes) {
     $routes->get('/', 'DossiersController::index');
     $routes->get('dossiers', 'DossiersController::index');
     $routes->get('dossier', 'DossierController::index');

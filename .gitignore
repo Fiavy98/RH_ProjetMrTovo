@@ -60,6 +60,9 @@ $RECYCLE.BIN/
 *.sql
 *.sqlite
 *.db
+# Scripts de schéma et fixtures versionnés pour le Bloc 7, partie C
+!database/bloc7/partie_c.sql
+!database/bloc7/partie_c_donnees_test.sql
 composer.phar
 app/Database/sql/db_changement.txt
 app/Database/sql/db_teste.txt

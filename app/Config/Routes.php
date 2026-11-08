@@ -15,7 +15,7 @@ $routes->post('auth/logout', 'AuthController::logout', ['filter' => 'auth']);
 
 // Outils de développement (désactivés en production)
 if (ENVIRONMENT !== 'production') {
-    $routes->get('dev/db', 'Dev::db', ['filter' => 'auth']);
+    $routes->get('dev/db', 'Dev::db', ['filter' => ['auth', 'internal']]);
 }
 
 // Les routes explicites de la partie D doivent précéder les routes génériques (:segment).

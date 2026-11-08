@@ -1,0 +1,6 @@
+<?= $this->extend('layouts/main') ?>
+<?= $this->section('content') ?>
+<div class="page-head"><div><p class="eyebrow">Paramétrage RH</p><h1>Comptes salariés</h1><p>Le compte de connexion est rattaché à la fiche employé et au rôle Salarié.</p></div></div>
+<?= ui_panel('Salariés actifs',ui_table(['Matricule','Nom','Email','État'],array_map(static fn($e)=>[$e['matricule'],$e['prenom'].' '.$e['nom'],$e['email'],$e['actif']?'Actif':'Inactif'],$employees))) ?>
+<form class="panel" method="post" action="<?= site_url('bloc7/comptes-salaries') ?>"><?= csrf_field() ?><div class="panel-head"><h2 class="panel-title">Activer ou réinitialiser un compte</h2></div><div class="panel-body"><div class="form-grid"><div class="field"><label for="employee">Salarié</label><select id="employee" name="employe_id" required><?php foreach($employees as $e): if(!$e['actif']) continue; ?><option value="<?= (int)$e['id'] ?>"><?= esc($e['matricule'].' · '.$e['prenom'].' '.$e['nom'].' — '.$e['email']) ?></option><?php endforeach; ?></select></div><?= ui_field('mot_de_passe','Nouveau mot de passe','password','',['required'=>true,'hint'=>'Au moins 8 caractères. Il est stocké sous forme chiffrée.']) ?></div><div class="form-actions"><button class="btn primary">Enregistrer le compte</button></div></div></form>
+<?= $this->endSection() ?>
