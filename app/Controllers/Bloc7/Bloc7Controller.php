@@ -72,8 +72,68 @@ class Bloc7Controller extends BaseController
     public function absences(){return $this->render('Absences enregistrées','bloc7/table',['columns'=>['Employé','Type','Période','Durée','État','Demande'], 'rows'=>db_connect()->table('absence a')->select('a.*,e.nom,e.prenom,t.libelle')->join('employe e','e.id=a.employe_id')->join('type_conge t','t.id=a.type_conge_id')->orderBy('date_debut','DESC')->get()->getResultArray(),'mode'=>'absence']);}
     public function notifications(){ $rows=db_connect()->table('notification_employe')->where('destinataire_employe_id',$this->actor())->orderBy('cree_le','DESC')->get()->getResultArray(); return $this->render('Mes notifications','bloc7/notifications',['notifications'=>$rows]); }
     public function marquerNotificationsLues(){ db_connect()->table('notification_employe')->where('destinataire_employe_id',$this->actor())->where('lue_le IS NULL',null,false)->update(['lue_le'=>date('Y-m-d H:i:s')]); return redirect()->back()->with('success','Notifications marquées comme lues.'); }
-    public function comptesSalaries(){ $rows=db_connect()->table('employe e')->select('e.id,e.matricule,e.nom,e.prenom,e.email,e.actif')->orderBy('e.nom')->get()->getResultArray(); return $this->render('Comptes salariés','bloc7/comptes',['employees'=>$rows]); }
-    public function enregistrerCompteSalarie(){ $employee=(int)$this->request->getPost('employe_id');$password=(string)$this->request->getPost('mot_de_passe');if(strlen($password)<8)return redirect()->back()->with('error','Le mot de passe doit comporter au moins 8 caractères.');$db=db_connect();$row=$db->table('employe')->where(['id'=>$employee,'actif'=>true])->get()->getRowArray();$role=$db->table('role')->where('nom_role','Salarie')->get()->getRowArray();if(!$row||!$role)return redirect()->back()->with('error','Salarié actif ou rôle Salarié introuvable.');$db->transBegin();try{$db->table('employe')->where('id',$employee)->update(['mot_de_passe'=>password_hash($password,PASSWORD_DEFAULT)]);$db->query('INSERT INTO employe_role (employe_id,role_id) VALUES (?,?) ON CONFLICT (employe_id,role_id) DO NOTHING',[$employee,$role['id']]);if(!$db->transStatus())throw new \RuntimeException('Création du compte impossible.');$db->transCommit();return redirect()->to(site_url('bloc7/comptes-salaries'))->with('success','Compte salarié activé pour '.$row['email'].'.');}catch(Throwable $e){$db->transRollback();return redirect()->back()->with('error',$e->getMessage());} }
+    public function comptesSalaries()
+    {
+        $db = db_connect();
+        $employees = $db->table('employe e')
+            ->select('e.id,e.matricule,e.nom,e.prenom,e.email,e.actif,e.manager_id,m.prenom AS manager_prenom,m.nom AS manager_nom')
+            ->join('employe m', 'm.id=e.manager_id', 'left')
+            ->orderBy('e.nom')->get()->getResultArray();
+        $managers = $db->table('employe e')->distinct()
+            ->select('e.id,e.matricule,e.nom,e.prenom')
+            ->join('employe_role er', 'er.employe_id=e.id')
+            ->join('role r', 'r.id=er.role_id')
+            ->where('e.actif', true)->where('r.nom_role', 'Manager')
+            ->orderBy('e.nom')->get()->getResultArray();
+
+        return $this->render('Comptes salariés', 'bloc7/comptes', [
+            'employees' => $employees,
+            'managers' => $managers,
+        ]);
+    }
+
+    public function enregistrerCompteSalarie()
+    {
+        $employeeId = (int) $this->request->getPost('employe_id');
+        $managerInput = trim((string) $this->request->getPost('manager_id'));
+        $managerId = $managerInput === '' ? null : (int) $managerInput;
+        $password = (string) $this->request->getPost('mot_de_passe');
+        if (strlen($password) < 8) {
+            return redirect()->back()->withInput()->with('error', 'Le mot de passe doit comporter au moins 8 caractères.');
+        }
+
+        $db = db_connect();
+        $employee = $db->table('employe')->where(['id' => $employeeId, 'actif' => true])->get()->getRowArray();
+        $staffRole = $db->table('role')->where('nom_role', 'Salarie')->get()->getRowArray();
+        if (!$employee || !$staffRole) {
+            return redirect()->back()->withInput()->with('error', 'Salarié actif ou rôle Salarié introuvable.');
+        }
+        if ($managerId !== null) {
+            $isManager = $db->table('employe_role er')->select('er.employe_id')
+                ->join('role r', 'r.id=er.role_id')
+                ->join('employe e', 'e.id=er.employe_id')
+                ->where('er.employe_id', $managerId)->where('e.actif', true)
+                ->where('r.nom_role', 'Manager')->countAllResults() > 0;
+            if ($managerId === $employeeId || !$isManager) {
+                return redirect()->back()->withInput()->with('error', 'Choisissez un autre salarié actif ayant le rôle Manager, ou laissez le champ vide.');
+            }
+        }
+
+        $db->transBegin();
+        try {
+            $db->table('employe')->where('id', $employeeId)->update([
+                'mot_de_passe' => password_hash($password, PASSWORD_DEFAULT),
+                'manager_id' => $managerId,
+            ]);
+            $db->query('INSERT INTO employe_role (employe_id,role_id) VALUES (?,?) ON CONFLICT (employe_id,role_id) DO NOTHING', [$employeeId, $staffRole['id']]);
+            if (!$db->transStatus()) throw new \RuntimeException('Création du compte impossible.');
+            $db->transCommit();
+            return redirect()->to(site_url('bloc7/comptes-salaries'))->with('success', 'Compte salarié et rattachement manager enregistrés pour ' . $employee['email'] . '.');
+        } catch (Throwable $e) {
+            $db->transRollback();
+            return redirect()->back()->withInput()->with('error', $e->getMessage());
+        }
+    }
     public function telechargerJustificatif(int $id){$db=db_connect();$doc=$db->table('justificatif_conge j')->select('j.*,d.employe_id')->join('demande_conge d','d.id=j.demande_conge_id')->where('j.id',$id)->get()->getRowArray();if(!$doc||($this->role()!=='rh'&&(int)$doc['employe_id']!==$this->actor()))return $this->response->setStatusCode(404);$path=realpath(WRITEPATH.$doc['chemin_stockage']);$base=realpath(WRITEPATH.'uploads'.DIRECTORY_SEPARATOR.'conges');if(!$path||!$base||!str_starts_with($path,$base.DIRECTORY_SEPARATOR)||!is_file($path))return $this->response->setStatusCode(404);return $this->response->download($path,null)->setFileName($doc['nom_fichier']);}
 
     private function saveJustificatif(int $id,$file):array{
